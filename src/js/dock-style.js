@@ -7,37 +7,34 @@ import {APP_VERSION} from './version.js';
 
 /*
  * The Dock home style (Settings -> Look -> Home style), after webos-vibehack's
- * tvOS-like launcher: the first four tiles in a dock with the focused app's
- * name above it, the rest in a grid below, a glow in the focused app's colour,
- * one glass highlight that springs between tiles, and Inputs / Wi-Fi /
- * Settings pills at the top.
+ * Apple TV-style launcher: the first row of tiles in a dock with the focused
+ * app's name above it, the rest in a grid below, a glow in the focused app's
+ * colour and one glass highlight that springs between tiles. Top left, a clock
+ * that opens a menu: the inputs, Launch Home's Settings and TV Settings.
  *
- * Presentation only. The tiles, inputs and Settings button are Launch Home's
- * own (apps.js, inputs.js, main.js) with their own click handlers, and the
- * focus manager (focus.js) still moves the remote between them. This module
- * lays them out, follows focus (focusin) to scroll, glow and name, and turns
- * the inputs row into the Inputs pill's dropdown. Classic takes all of it off.
+ * Presentation only. The tiles and inputs are Launch Home's own (apps.js,
+ * inputs.js) with their own click handlers, and the focus manager (focus.js)
+ * still moves the remote between them. This module lays them out, follows
+ * focus (focusin) to scroll, glow and name, and moves the inputs row into the
+ * clock's menu. Classic takes all of it off.
  */
 
-const COLUMNS = 4;
-const TILE_W = 360;
-const TILE_H = 202;
 const SIDE = 112;
-const CELL_W = (1920 - 2 * SIDE) / COLUMNS;
-const ROW_PITCH = 292;
-// Tile top of the dock row: the next row peeks in at the bottom.
-const DOCK_TOP = 708;
+// At four across: 360x202 tiles, the dock row's bottom at 910.
+const BASE_TILE_W = 360;
+const BASE_CELL_W = (1920 - 2 * SIDE) / 4;
+const DOCK_BOTTOM = 910;
 // Extra space below the dock.
 const DOCK_GAP = 36;
 const FOCUS_SCALE = 1.1;
 // Room for the glass glow around the scaled tile.
 const GLASS_PAD = 12;
-// The area grid rows scroll into (the header hides once the dock leaves).
+// The area grid rows scroll into (the clock hides once the dock leaves).
 const VIEW_TOP = 80;
 const VIEW_BOTTOM = 1060;
 const HERO_SIZE = 96;
 
-export const HOME_STYLES = ['dock', 'classic'];
+export const DOCK_COLUMNS = [3, 4, 5, 6];
 
 /** The home style in `config`: 'dock' unless Classic was chosen. */
 export function homeStyleOf(config) {
@@ -45,13 +42,38 @@ export function homeStyleOf(config) {
   return style === 'classic' ? 'classic' : 'dock';
 }
 
-export function dockTileLeft(i) {
-  return SIDE + (i % COLUMNS) * CELL_W + (CELL_W - TILE_W) / 2;
+/** Tiles per row in `config` (3-6, default 4). */
+export function dockColumnsOf(config) {
+  const n = Number(config && config.launcher && config.launcher.dockColumns);
+  return DOCK_COLUMNS.indexOf(n) >= 0 ? n : 4;
 }
 
-export function dockTileTop(i) {
-  const row = Math.floor(i / COLUMNS);
-  return DOCK_TOP + row * ROW_PITCH + (row > 0 ? DOCK_GAP : 0);
+/**
+ * Sizes for `columns` tiles per row: tiles shrink to fit, keeping the 16:9
+ * card and the dock row's bottom edge where four across has them.
+ */
+export function dockGeometry(columns) {
+  const cellW = (1920 - 2 * SIDE) / columns;
+  const tileW = Math.round(cellW * BASE_TILE_W / BASE_CELL_W);
+  const tileH = Math.round(tileW * 202 / 360);
+  return {
+    columns: columns,
+    cellW: cellW,
+    tileW: tileW,
+    tileH: tileH,
+    scale: tileW / BASE_TILE_W,
+    dockTop: DOCK_BOTTOM - tileH,
+    rowPitch: tileH + 90
+  };
+}
+
+export function dockTileLeft(i, g) {
+  return SIDE + (i % g.columns) * g.cellW + (g.cellW - g.tileW) / 2;
+}
+
+export function dockTileTop(i, g) {
+  const row = Math.floor(i / g.columns);
+  return g.dockTop + row * g.rowPitch + (row > 0 ? DOCK_GAP : 0);
 }
 
 /**
@@ -59,30 +81,21 @@ export function dockTileTop(i) {
  * the dock row is never scrolled; other rows only as far as it takes to show
  * the whole highlight and the name below the tile.
  */
-export function dockScrollOffset(i, offset) {
-  if (Math.floor(i / COLUMNS) === 0) return 0;
-  const top = dockTileTop(i);
+export function dockScrollOffset(i, offset, g) {
+  if (Math.floor(i / g.columns) === 0) return 0;
+  const top = dockTileTop(i, g);
   let next = offset;
-  if (top - next + TILE_H + 70 > VIEW_BOTTOM) next = top + TILE_H + 70 - VIEW_BOTTOM;
+  if (top - next + g.tileH + 70 > VIEW_BOTTOM) next = top + g.tileH + 70 - VIEW_BOTTOM;
   if (top - next - 24 < VIEW_TOP) next = top - 24 - VIEW_TOP;
   return next;
 }
 
-/** Morning, afternoon... for the line above the clock, by hour (0-23). */
-export function greetingFor(hour) {
-  if (hour < 5) return 'Good night';
-  if (hour < 12) return 'Good morning';
-  if (hour < 17) return 'Good afternoon';
-  if (hour < 22) return 'Good evening';
-  return 'Good night';
-}
-
 /**
  * @param {object} opts
- *   elements: {app, launcher, appGridShell, appGrid, inputRow, channelStrip,
- *     appSettingsBtn}
+ *   elements: {app, launcher, appGridShell, appGrid, inputRow, channelStrip}
  *   focusElement(el): move the remote to `el` (focus.js); true if it did
- *   onOpenNetworkSettings(): the Wi-Fi pill
+ *   onOpenSettings(): Launch Home's Settings, from the menu
+ *   onOpenTvSettings(): the TV's own Settings, from the menu
  *   onToast(text)
  */
 export function createDockStyle(opts) {
@@ -94,14 +107,19 @@ export function createDockStyle(opts) {
   const hero = $('dock-hero');
   const glass = $('dock-glass');
   const band = $('dock-band');
-  const greeting = $('dock-greeting');
   const ambients = [$('dock-ambient-a'), $('dock-ambient-b')];
-  const inputsBtn = $('dock-inputs-btn');
-  const wifiBtn = $('dock-wifi-btn');
-  const wifiLabel = $('dock-wifi-label');
-  const pills = [inputsBtn, wifiBtn, el.appSettingsBtn];
+  const menuBtn = $('dock-menu-btn');
+  const menu = $('dock-menu');
+  const menuTime = $('dock-menu-time');
+  const menuDate = $('dock-menu-date');
+  const menuInputs = $('dock-menu-inputs');
+  const settingsRow = $('dock-menu-settings');
+  const tvRow = $('dock-menu-tv');
+  // Where the inputs row lives in Classic, to put it back.
+  const inputHome = {parent: inputRow.parentNode, next: inputRow.nextSibling};
 
   let on = false;
+  let geo = dockGeometry(4);
   let offset = 0;
   let focusedTile = null;
   let lastDockTile = null;
@@ -110,20 +128,16 @@ export function createDockStyle(opts) {
   let heroSwap = null;
   let ambientFront = 0;
   let ambientKey = '';
-  let inputsOpen = false;
-  let wifiWatch = null;
+  let menuOpen = false;
   const tileColors = new WeakMap();
 
+  // TV Settings is in the menu, so its tile sits out of the Dock grid.
   function tiles() {
-    return Array.prototype.slice.call(grid.querySelectorAll('.app-tile'));
-  }
-
-  function isPill(node) {
-    return pills.indexOf(node) >= 0;
+    return Array.prototype.slice.call(grid.querySelectorAll('.app-tile:not(.settings-tile)'));
   }
 
   function dockTiles() {
-    return tiles().slice(0, COLUMNS);
+    return tiles().slice(0, geo.columns);
   }
 
   function focusEl(node) {
@@ -135,19 +149,23 @@ export function createDockStyle(opts) {
   /** Places every tile by its position; tiles glide when the order changes. */
   function layout() {
     const list = tiles();
+    const g = geo;
+    shell.style.setProperty('--dock-tile-w', g.tileW + 'px');
+    shell.style.setProperty('--dock-tile-h', g.tileH + 'px');
+    shell.style.setProperty('--dock-scale', String(g.scale));
     list.forEach(function (tile, i) {
-      tile.style.left = dockTileLeft(i) + 'px';
-      tile.style.top = dockTileTop(i) + 'px';
-      tile.classList.toggle('dock-row', i < COLUMNS);
+      tile.style.left = dockTileLeft(i, g) + 'px';
+      tile.style.top = dockTileTop(i, g) + 'px';
+      tile.classList.toggle('dock-row', i < g.columns);
     });
-    const n = Math.min(COLUMNS, list.length);
+    const n = Math.min(g.columns, list.length);
     band.style.display = n ? '' : 'none';
-    band.style.left = (dockTileLeft(0) - 28) + 'px';
-    band.style.top = (DOCK_TOP - 28) + 'px';
-    band.style.width = ((n - 1) * CELL_W + TILE_W + 56) + 'px';
-    band.style.height = (TILE_H + 56) + 'px';
-    grid.style.height = (list.length ? dockTileTop(list.length - 1) + TILE_H + 120 : 0) + 'px';
-    hero.style.top = (DOCK_TOP - 28 - 52 - HERO_SIZE) + 'px';
+    band.style.left = (dockTileLeft(0, g) - 28) + 'px';
+    band.style.top = (g.dockTop - 28) + 'px';
+    band.style.width = ((n - 1) * g.cellW + g.tileW + 56) + 'px';
+    band.style.height = (g.tileH + 56) + 'px';
+    grid.style.height = (list.length ? dockTileTop(list.length - 1, g) + g.tileH + 120 : 0) + 'px';
+    hero.style.top = (g.dockTop - 28 - 52 - HERO_SIZE) + 'px';
     list.forEach(function (tile) {
       if (paintBanner(tile)) return;
       const img = tile.querySelector('img.app-icon');
@@ -159,7 +177,7 @@ export function createDockStyle(opts) {
   }
 
   function unlayout() {
-    tiles().forEach(function (tile) {
+    Array.prototype.forEach.call(grid.querySelectorAll('.app-tile'), function (tile) {
       tile.style.left = '';
       tile.style.top = '';
       tile.style.backgroundColor = '';
@@ -171,6 +189,9 @@ export function createDockStyle(opts) {
     });
     grid.style.height = '';
     shell.style.transform = '';
+    ['--dock-tile-w', '--dock-tile-h', '--dock-scale'].forEach(function (name) {
+      shell.style.removeProperty(name);
+    });
     grid.classList.remove('dock-pre');
   }
 
@@ -345,20 +366,21 @@ export function createDockStyle(opts) {
     const list = tiles();
     const i = list.indexOf(tile);
     if (i < 0) return;
+    const g = geo;
     if (focusedTile && focusedTile !== tile) resetTilt(focusedTile);
     focusedTile = tile;
-    const row = Math.floor(i / COLUMNS);
+    const row = Math.floor(i / g.columns);
     if (row === 0) lastDockTile = tile;
 
-    offset = dockScrollOffset(i, offset);
+    offset = dockScrollOffset(i, offset, g);
     shell.style.transform = 'translateY(' + (-offset) + 'px)';
-    // Keep the header until the dock band would run into it.
-    document.body.classList.toggle('dock-scrolled', DOCK_TOP - 28 - offset < 280);
+    // Keep the clock until the dock band would run into it.
+    document.body.classList.toggle('dock-scrolled', g.dockTop - 28 - offset < 180);
 
-    const w = TILE_W * FOCUS_SCALE + 2 * GLASS_PAD;
-    const h = TILE_H * FOCUS_SCALE + 2 * GLASS_PAD;
-    const x = dockTileLeft(i) + TILE_W / 2 - w / 2;
-    const y = dockTileTop(i) + TILE_H / 2 - h / 2;
+    const w = g.tileW * FOCUS_SCALE + 2 * GLASS_PAD;
+    const h = g.tileH * FOCUS_SCALE + 2 * GLASS_PAD;
+    const x = dockTileLeft(i, g) + g.tileW / 2 - w / 2;
+    const y = dockTileTop(i, g) + g.tileH / 2 - h / 2;
     glass.style.width = w + 'px';
     glass.style.height = h + 'px';
     glass.style.transform = 'translate(' + x + 'px,' + y + 'px)';
@@ -440,18 +462,18 @@ export function createDockStyle(opts) {
   function onFocusIn(event) {
     if (!on) return;
     const target = event.target;
-    if (inputsOpen && target !== inputsBtn && !inputRow.contains(target)) closeInputs(false);
+    if (menuOpen && target !== menuBtn && !menu.contains(target)) closeMenu(false);
     if (target && target.classList && target.classList.contains('app-tile') &&
         grid.contains(target)) {
       focusTile(target);
       return;
     }
-    // Off the tiles (pills, inputs, channels): the highlight goes, the header
+    // Off the tiles (clock, menu, channels): the highlight goes, the clock
     // comes back, the glow stays on the last app.
     if (focusedTile) resetTilt(focusedTile);
     focusedTile = null;
     hideGlass();
-    if (isPill(target)) document.body.classList.remove('dock-scrolled');
+    if (target === menuBtn) document.body.classList.remove('dock-scrolled');
   }
 
   // The grid moves by transform only. Focusing a tile below the screen makes
@@ -466,135 +488,91 @@ export function createDockStyle(opts) {
     }
   }
 
-  // ---- Inputs pill: the inputs row as its dropdown ---------------------------
+  // ---- the clock's menu: inputs, Settings, TV Settings -----------------------
 
-  function inputChips() {
-    return Array.prototype.filter.call(inputRow.querySelectorAll('.focusable'), function (chip) {
+  function menuItems() {
+    const chips = Array.prototype.filter.call(inputRow.querySelectorAll('.focusable'), function (chip) {
       return !chip.disabled;
     });
+    return chips.concat([settingsRow, tvRow]);
   }
 
-  function openInputs() {
-    if (!inputChips().length) {
-      if (opts.onToast) opts.onToast('No inputs to show — pick some in Settings → Inputs & channels');
-      return;
-    }
-    const r = inputsBtn.getBoundingClientRect();
-    inputRow.style.left = r.left + 'px';
-    inputRow.style.top = (r.bottom + 20) + 'px';
-    inputRow.style.minWidth = Math.max(r.width, 300) + 'px';
-    inputsOpen = true;
-    document.body.classList.add('dock-inputs-open');
-    const chips = inputChips();
-    const current = chips.filter(function (chip) { return chip.classList.contains('active'); })[0];
-    focusEl(current || chips[0]);
+  function openMenu() {
+    menuOpen = true;
+    document.body.classList.add('dock-menu-open');
+    menuBtn.setAttribute('aria-expanded', 'true');
+    const items = menuItems();
+    const current = items.filter(function (item) { return item.classList.contains('active'); })[0];
+    focusEl(current || items[0]);
   }
 
-  function closeInputs(refocusPill) {
-    if (!inputsOpen) return;
-    inputsOpen = false;
-    document.body.classList.remove('dock-inputs-open');
-    if (refocusPill) focusEl(inputsBtn);
+  function closeMenu(refocusClock) {
+    if (!menuOpen) return;
+    menuOpen = false;
+    document.body.classList.remove('dock-menu-open');
+    menuBtn.setAttribute('aria-expanded', 'false');
+    if (refocusClock) focusEl(menuBtn);
   }
 
-  // Picking an input (or Channels) closes the dropdown; inputs.js switches.
+  // Picking an input (or Channels) closes the menu; inputs.js switches. The
+  // Channels strip takes the remote itself, so only come back to the clock
+  // when the remote is still in the menu.
   function onInputClick() {
-    if (!on || !inputsOpen) return;
-    closeInputs(true);
-  }
-
-  // ---- Wi-Fi pill ------------------------------------------------------------
-
-  /** Shows the Wi-Fi network name when the TV reports it, else the connection type. */
-  function watchNetwork() {
-    if (wifiWatch || !(window.webOS && window.webOS.service)) return;
-    try {
-      wifiWatch = window.webOS.service.request('luna://com.palm.connectionmanager', {
-        method: 'getStatus',
-        parameters: {subscribe: true},
-        onSuccess: function (res) {
-          let text = 'Wi-Fi';
-          if (res && res.wired && res.wired.state === 'connected') text = 'Ethernet';
-          else if (res && res.wifi && res.wifi.state === 'connected') text = res.wifi.ssid || 'Wi-Fi';
-          else if (res && res.isInternetConnectionAvailable === false) text = 'Offline';
-          wifiLabel.textContent = text;
-        },
-        onFailure: function () { /* keep "Wi-Fi" */ }
-      });
-    } catch (err) {
-      wifiWatch = null;
-    }
+    if (!on || !menuOpen) return;
+    const active = document.activeElement;
+    closeMenu(!active || active === document.body || menu.contains(active));
   }
 
   // ---- remote ----------------------------------------------------------------
-
-  /** The pill straight above a dock tile, by horizontal distance. */
-  function pillAbove(tile) {
-    const cx = tile.getBoundingClientRect().left + tile.getBoundingClientRect().width / 2;
-    let best = null;
-    let bestD = Infinity;
-    pills.forEach(function (pill) {
-      const r = pill.getBoundingClientRect();
-      if (!r.width) return;
-      const d = Math.abs(r.left + r.width / 2 - cx);
-      if (d < bestD) {
-        bestD = d;
-        best = pill;
-      }
-    });
-    return best || pills[0];
-  }
 
   function channelStripOpen() {
     return !!(el.channelStrip && !el.channelStrip.hidden);
   }
 
   /**
-   * Arrow keys the Dock layout steers itself (focus.js asks first): the
-   * Inputs dropdown, Up from the dock to the pill above, and Down from a pill
-   * back to the dock tile the remote came from. False: focus.js moves as usual.
+   * Arrow keys the Dock layout steers itself (focus.js asks first): the menu,
+   * Up from the dock to the clock, and Down from the clock back to the dock
+   * tile the remote came from. False: focus.js moves as usual.
    */
   function handleArrow(code, active) {
     if (!on || !active) return false;
-    if (inputsOpen) {
-      const chips = inputChips();
-      const i = chips.indexOf(active);
-      if (i < 0 && active !== inputsBtn) {
-        closeInputs(false);
+    if (menuOpen) {
+      const items = menuItems();
+      const i = items.indexOf(active);
+      if (i < 0 && active !== menuBtn) {
+        closeMenu(false);
         return false;
       }
       if (code === REMOTE_KEY.UP) {
-        if (i > 0) focusEl(chips[i - 1]);
-        else closeInputs(true);
+        if (i > 0) focusEl(items[i - 1]);
+        else closeMenu(true);
       } else if (code === REMOTE_KEY.DOWN) {
-        if (i < chips.length - 1) focusEl(chips[i + 1]);
-      } else {
-        closeInputs(true);
+        if (i < items.length - 1) focusEl(items[i + 1]);
+      } else if (code === REMOTE_KEY.LEFT) {
+        closeMenu(true);
       }
       return true;
     }
     // With the Channels strip open, Up and Down go through it (focus.js).
     if (channelStripOpen()) return false;
     if (code === REMOTE_KEY.UP && dockTiles().indexOf(active) >= 0) {
-      return focusEl(pillAbove(active));
+      return focusEl(menuBtn);
     }
-    // The pills end at the screen edges (focus.js would carry on through the
-    // grid in index order).
-    if ((code === REMOTE_KEY.LEFT && active === pills[0]) ||
-        (code === REMOTE_KEY.RIGHT && active === pills[pills.length - 1])) {
+    if (active === menuBtn) {
+      if (code === REMOTE_KEY.DOWN) {
+        const back = lastDockTile && grid.contains(lastDockTile) ? lastDockTile : dockTiles()[0];
+        focusEl(back);
+      }
+      // Nothing else up here: focus.js would carry on through the grid.
       return true;
-    }
-    if (code === REMOTE_KEY.DOWN && isPill(active)) {
-      const back = lastDockTile && grid.contains(lastDockTile) ? lastDockTile : dockTiles()[0];
-      return focusEl(back);
     }
     return false;
   }
 
-  /** Back closes the Inputs dropdown. False when there was nothing to close. */
+  /** Back closes the menu. False when there was nothing to close. */
   function handleBack() {
-    if (!on || !inputsOpen) return false;
-    closeInputs(true);
+    if (!on || !menuOpen) return false;
+    closeMenu(true);
     return true;
   }
 
@@ -602,6 +580,11 @@ export function createDockStyle(opts) {
 
   function apply(config) {
     const want = homeStyleOf(config) === 'dock';
+    const columns = dockColumnsOf(config);
+    if (columns !== geo.columns) {
+      geo = dockGeometry(columns);
+      offset = 0;
+    }
     if (want === on) {
       if (on) layout();
       return;
@@ -609,19 +592,17 @@ export function createDockStyle(opts) {
     on = want;
     document.body.classList.toggle('home-dock', on);
     if (on) {
+      menuInputs.appendChild(inputRow);
       layout();
-      watchNetwork();
       animateIn();
     } else {
-      closeInputs(false);
+      closeMenu(false);
       hideGlass();
       hideHero();
       focusedTile = null;
       offset = 0;
       document.body.classList.remove('dock-scrolled');
-      inputRow.style.left = '';
-      inputRow.style.top = '';
-      inputRow.style.minWidth = '';
+      inputHome.parent.insertBefore(inputRow, inputHome.next);
       unlayout();
     }
   }
@@ -629,16 +610,21 @@ export function createDockStyle(opts) {
   // Back from an app: replay the entrance and put the highlight on the tile.
   function onResume() {
     if (!on || document.hidden) return;
-    closeInputs(false);
+    closeMenu(false);
     animateIn();
   }
 
-  inputsBtn.addEventListener('click', function () {
-    if (inputsOpen) closeInputs(true);
-    else openInputs();
+  menuBtn.addEventListener('click', function () {
+    if (menuOpen) closeMenu(true);
+    else openMenu();
   });
-  wifiBtn.addEventListener('click', function () {
-    if (opts.onOpenNetworkSettings) opts.onOpenNetworkSettings();
+  settingsRow.addEventListener('click', function () {
+    closeMenu(false);
+    if (opts.onOpenSettings) opts.onOpenSettings();
+  });
+  tvRow.addEventListener('click', function () {
+    closeMenu(true);
+    if (opts.onOpenTvSettings) opts.onOpenTvSettings();
   });
   inputRow.addEventListener('click', onInputClick);
   el.app.addEventListener('mousemove', onPointerMove);
@@ -664,12 +650,22 @@ export function createDockStyle(opts) {
   return {
     apply: apply,
     isOn: function () { return on; },
-    isInputsOpen: function () { return inputsOpen; },
+    isMenuOpen: function () { return menuOpen; },
     handleArrow: handleArrow,
     handleBack: handleBack,
-    /** The line above the clock, for the hour (0-23) it shows; null: none. */
-    setGreeting: function (hour) {
-      if (greeting) greeting.textContent = hour === null ? '' : greetingFor(hour);
+    /**
+     * The clock: `parts` from clock-format.js clockParts, `date` the long
+     * date shown at the top of the menu.
+     */
+    setClock: function (parts, date) {
+      menuTime.textContent = parts.time;
+      if (parts.ampm) {
+        const ampm = document.createElement('span');
+        ampm.className = 'dock-menu-ampm';
+        ampm.textContent = parts.ampm;
+        menuTime.appendChild(ampm);
+      }
+      menuDate.textContent = date;
     }
   };
 }

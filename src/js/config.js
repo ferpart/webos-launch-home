@@ -96,6 +96,8 @@ export const DEFAULT_CONFIG = {
     // Home screen layout: 'dock' (the Apple TV-style dock and grid,
     // dock-style.js) or 'classic' (the original row of glass tiles).
     homeStyle: 'dock',
+    // Dock: tiles per row (3-6); they shrink to fit.
+    dockColumns: 4,
     // All apps tile on the home row (opens the grid of every app on the TV).
     allAppsTile: true,
     // Remote number keys (1-9) open the home row tile at that position, with

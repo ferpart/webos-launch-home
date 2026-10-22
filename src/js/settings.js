@@ -2051,12 +2051,16 @@ export function createSettingsPanel(panel, getConfig, options) {
       {value: 'classic', label: 'Classic (original)'}
     ], config.launcher.homeStyle === 'classic' ? 'classic' : 'dock');
     homeStyleSection.appendChild(labeledControl('Layout', homeStyleSelect));
+    const dockColumnsSelect = createOptionStepper('', 899, [3, 4, 5, 6].map(function (n) {
+      return {value: String(n), label: n + ' across'};
+    }), String([3, 4, 5, 6].indexOf(config.launcher.dockColumns) >= 0 ? config.launcher.dockColumns : 4));
+    homeStyleSection.appendChild(labeledControl('Dock: apps per row', dockColumnsSelect));
     const homeStyleHint = document.createElement('p');
     homeStyleHint.className = 'settings-hint';
-    homeStyleHint.textContent = 'Dock: four apps in a dock with the rest in a grid below, a glow in the ' +
-      'colour of the app you are on, and Inputs, Wi-Fi and Settings at the top. Classic: the original ' +
-      'row of glass tiles with weather and the volume bar. Wallpaper, apps and inputs are shared; the ' +
-      'Glass, icon size and layout settings apply to Classic.';
+    homeStyleHint.textContent = 'Dock: the first row of apps in a dock with the rest in a grid below, ' +
+      'a glow in the colour of the app you are on, and a clock top left that opens your inputs, these ' +
+      'settings and TV Settings. Classic: the original row of glass tiles with weather and the volume ' +
+      'bar. Wallpaper, apps and inputs are shared; the Glass, icon size and layout settings apply to Classic.';
     homeStyleSection.appendChild(homeStyleHint);
     panes.look.appendChild(homeStyleSection);
 
@@ -4174,6 +4178,7 @@ export function createSettingsPanel(panel, getConfig, options) {
       config.launcher.allAppsTile = allAppsTileToggle.checked;
       config.launcher.numberKeyLaunch = numberKeyToggle.checked;
       config.launcher.homeStyle = homeStyleSelect.value === 'classic' ? 'classic' : 'dock';
+      config.launcher.dockColumns = parseInt(dockColumnsSelect.value, 10) || 4;
       config.launcher.glassTint = glassSelect.value || 'light';
       config.launcher.glassBorder = glassBorderSelect.value || 'white';
       config.launcher.focusColour = focusColourSelect.value || 'warm';

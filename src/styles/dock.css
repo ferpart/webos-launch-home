@@ -17,9 +17,8 @@
 /* Dock pieces are hidden in Classic (and so never take focus there). */
 .dock-ambient,
 .dock-hero,
-.dock-greeting,
-.dock-pill,
-.dock-pill-label,
+.dock-menu-btn,
+.dock-menu,
 .dock-band,
 .dock-glass {
   display: none;
@@ -74,7 +73,7 @@ body.home-dock .dock-hero {
   pointer-events: none;
 }
 
-/* ---- header: greeting, clock and date left; pills right --------------------- */
+/* ---- top left: the clock, which opens the menu ----------------------------- */
 
 body.home-dock .top-bar {
   position: absolute;
@@ -83,114 +82,45 @@ body.home-dock .top-bar {
   right: 112px;
   min-height: 0;
   padding: 0;
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-end;
   z-index: 5;
   transition: opacity 300ms ease, transform 360ms cubic-bezier(0.25, 0.8, 0.3, 1);
 }
 
-/* Below the dock the header slides away so the grid gets the whole screen. */
+/* Below the dock the clock slides away so the grid gets the whole screen. */
 body.home-dock.dock-scrolled .top-bar {
   opacity: 0;
   transform: translateY(-48px);
   pointer-events: none;
 }
 
-body.home-dock .weather-panel {
+/* Classic's clock, weather and Settings button: the menu has them here. */
+body.home-dock .weather-panel,
+body.home-dock .top-bar .clock-stack,
+body.home-dock #app-settings-btn {
   display: none !important;
 }
 
-body.home-dock .top-bar .clock-stack {
-  position: static;
-  transform: none;
-  max-width: none;
-  text-align: left;
-  display: flex;
-  flex-wrap: wrap;
-  align-items: flex-end;
-}
-
-body.home-dock .dock-greeting {
-  display: block;
-  width: 100%;
-  margin-left: 8px;
-  color: rgba(255, 255, 255, 0.6);
-  font-size: 24px;
-  font-weight: 500;
-  letter-spacing: 0.22em;
-  text-transform: uppercase;
-}
-
-body.home-dock .top-bar .clock {
-  font-size: 104px;
-  font-weight: 300;
-  letter-spacing: -0.04em;
-  line-height: 1;
-  opacity: 1;
-  text-shadow: 0 2px 24px rgba(0, 0, 0, 0.35);
-}
-
-body.home-dock .top-bar .clock-ampm {
-  margin-left: 12px;
-  color: rgba(255, 255, 255, 0.7);
-  font-size: 30px;
-  font-weight: 500;
-  letter-spacing: 0.08em;
-}
-
-body.home-dock .top-bar .clock-date {
-  margin: 0 0 18px;
-  color: rgba(255, 255, 255, 0.7);
-  font-size: 28px;
-  font-weight: 400;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  white-space: nowrap;
-  opacity: 1;
-}
-
-/* The divider between the time and the date. */
-body.home-dock .top-bar .clock:not(:empty) + .clock-date::before {
-  content: '';
-  display: inline-block;
-  width: 2px;
-  height: 52px;
-  margin: 0 32px -14px;
-  background: rgba(255, 255, 255, 0.2);
-}
-
+/* Only the voice badge is left up there, top right. */
 body.home-dock .top-bar .top-actions {
-  position: static;
-  display: flex;
-  align-items: center;
-  margin-bottom: 12px;
+  top: 6px;
+  right: 0;
 }
 
-body.home-dock .top-bar .top-actions > * + * {
-  margin-left: 20px;
-}
-
-/* Frosted pill, tvOS style (a tint, not a blur: see the top). */
-body.home-dock .dock-pill,
-body.home-dock #app-settings-btn {
+/* The clock: a frosted pill, tvOS style (a tint, not a blur: see the top). */
+body.home-dock .dock-menu-btn {
   display: flex;
   align-items: center;
-  width: auto;
   height: 84px;
-  padding: 0 40px 0 32px;
+  padding: 0 26px 0 36px;
   border-radius: 42px;
-  border: 2px solid rgba(255, 255, 255, 0.22);
+  border: 2px solid rgba(255, 255, 255, 0.2);
   background:
     linear-gradient(180deg, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.07)),
     rgba(18, 18, 20, 0.35);
-  -webkit-backdrop-filter: none;
-  backdrop-filter: none;
-  box-shadow: none;
   color: #fff;
   font: inherit;
-  font-size: 30px;
-  font-weight: 500;
+  font-size: 40px;
+  font-weight: 400;
   letter-spacing: 0.01em;
   white-space: nowrap;
   cursor: pointer;
@@ -198,32 +128,77 @@ body.home-dock #app-settings-btn {
   transition: background 160ms ease, color 160ms ease, transform 200ms ease;
 }
 
-body.home-dock .dock-pill svg {
-  width: 44px;
-  height: 44px;
-  margin-right: 18px;
-  fill: currentColor;
+.dock-menu-ampm {
+  margin-left: 8px;
+  font-size: 24px;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  opacity: 0.75;
 }
 
-body.home-dock #app-settings-btn .settings-icon-glyph {
-  width: 40px;
-  height: 40px;
-  margin-right: 18px;
-  opacity: 1;
-  filter: none;
+body.home-dock .dock-menu-chevron {
+  width: 30px;
+  height: 30px;
+  margin-left: 12px;
+  opacity: 0.7;
+  transition: transform 220ms ease;
 }
 
-body.home-dock .dock-pill-label {
-  display: inline;
+body.home-dock.dock-menu-open .dock-menu-chevron {
+  transform: rotate(180deg);
 }
 
-body.home-dock .dock-pill.focused,
-body.home-dock #app-settings-btn.focused {
+body.home-dock .dock-menu-btn.focused {
   background: rgba(255, 255, 255, 0.96);
   border-color: transparent;
   color: #000;
   transform: scale(1.04);
   box-shadow: 0 12px 34px rgba(0, 0, 0, 0.35);
+}
+
+/* The menu: the date, the inputs (inputs.js draws them), Settings, TV Settings. */
+body.home-dock.dock-menu-open .dock-menu {
+  display: block;
+  position: absolute;
+  top: 104px;
+  left: 0;
+  min-width: 480px;
+  padding: 16px;
+  border-radius: 40px;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  background: linear-gradient(180deg, #2a2a2e, #161618);
+  box-shadow: 0 30px 70px rgba(0, 0, 0, 0.5);
+  transform-origin: top left;
+  animation: dock-drop 220ms cubic-bezier(0.2, 0.8, 0.3, 1);
+}
+
+@keyframes dock-drop {
+  from { opacity: 0; transform: translateY(-16px) scale(0.96); }
+  to { opacity: 1; transform: none; }
+}
+
+.dock-menu-date,
+.dock-menu-heading {
+  padding: 10px 24px 6px;
+  color: rgba(255, 255, 255, 0.55);
+  font-size: 20px;
+  font-weight: 500;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.dock-menu-date {
+  padding-bottom: 14px;
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 24px;
+  letter-spacing: 0.12em;
+}
+
+.dock-menu-separator {
+  height: 2px;
+  margin: 12px 24px;
+  background: rgba(255, 255, 255, 0.12);
 }
 
 /* Volume / music bar: Classic only (the remote's volume keys still set it). */
@@ -251,11 +226,6 @@ body.home-dock .launcher > * + * {
 }
 
 /* The stage: band, tiles and highlight scroll together (dock-style.js). */
-/* The Inputs dropdown sits in .launcher: lift it over the header. */
-body.home-dock.dock-inputs-open .launcher {
-  z-index: 6;
-}
-
 body.home-dock #app-grid-shell {
   position: absolute;
   top: 0;
@@ -267,7 +237,8 @@ body.home-dock #app-grid-shell {
   transition: transform 420ms cubic-bezier(0.25, 0.8, 0.3, 1);
 }
 
-body.home-dock .app-scroll-edge {
+body.home-dock .app-scroll-edge,
+body.home-dock #app-grid > .settings-tile {
   display: none !important;
 }
 
@@ -296,12 +267,12 @@ body.home-dock .dock-band {
 body.home-dock #app-grid > .app-tile {
   position: absolute;
   margin: 0;
-  width: 360px;
-  height: 202px;
+  width: var(--dock-tile-w, 360px);
+  height: var(--dock-tile-h, 202px);
   padding: 0;
   display: block;
   border: none;
-  border-radius: 32px;
+  border-radius: calc(32px * var(--dock-scale, 1));
   background: #1c1c1e;
   -webkit-backdrop-filter: none;
   backdrop-filter: none;
@@ -322,7 +293,7 @@ body.home-dock #app-grid > .app-tile::before {
   right: 0;
   bottom: 0;
   left: 0;
-  border-radius: 32px;
+  border-radius: calc(32px * var(--dock-scale, 1));
   box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.1);
   pointer-events: none;
   z-index: 2;
@@ -344,7 +315,7 @@ body.home-dock #app-grid > .app-tile::after {
   right: 0;
   bottom: 0;
   left: 0;
-  border-radius: 32px;
+  border-radius: calc(32px * var(--dock-scale, 1));
   background: radial-gradient(ellipse 70% 90% at var(--sheen-x, 30%) var(--sheen-y, 0%),
     rgba(255, 255, 255, 0.32) 0%, rgba(255, 255, 255, 0.08) 45%, rgba(255, 255, 255, 0) 75%);
   opacity: 0;
@@ -402,7 +373,7 @@ body.home-dock #app-grid .app-tile.dock-bleed {
 body.home-dock #app-grid .dock-bleed .app-icon {
   top: 50%;
   height: 80%;
-  border-radius: 34px;
+  border-radius: calc(34px * var(--dock-scale, 1));
   box-shadow: 0 10px 28px rgba(0, 0, 0, 0.45);
   transform: translate(-50%, -50%);
 }
@@ -415,7 +386,7 @@ body.home-dock #app-grid .app-tile.dock-glyph {
 body.home-dock #app-grid .dock-glyph .app-icon {
   top: 50%;
   height: 62%;
-  border-radius: 22px;
+  border-radius: calc(22px * var(--dock-scale, 1));
   transform: translate(-50%, -50%);
 }
 
@@ -423,10 +394,10 @@ body.home-dock #app-grid .app-fallback {
   position: absolute;
   top: 50%;
   left: 50%;
-  width: 120px;
-  height: 120px;
-  border-radius: 28px;
-  font-size: 52px;
+  width: calc(120px * var(--dock-scale, 1));
+  height: calc(120px * var(--dock-scale, 1));
+  border-radius: calc(28px * var(--dock-scale, 1));
+  font-size: calc(52px * var(--dock-scale, 1));
   box-shadow: none;
   transform: translate(-50%, -50%);
 }
@@ -437,8 +408,8 @@ body.home-dock #app-grid .all-apps-icon {
 }
 
 body.home-dock #app-grid .all-apps-icon svg {
-  width: 96px;
-  height: 96px;
+  width: calc(96px * var(--dock-scale, 1));
+  height: calc(96px * var(--dock-scale, 1));
 }
 
 /* The name under a grid tile, only while the remote is on it. The dock row
@@ -452,7 +423,7 @@ body.home-dock #app-grid .app-label {
   height: 44px;
   margin-top: 14px;
   color: rgba(255, 255, 255, 0.95);
-  font-size: 26px;
+  font-size: calc(14px + 12px * var(--dock-scale, 1));
   font-weight: 500;
   letter-spacing: 0.02em;
   text-align: center;
@@ -487,7 +458,7 @@ body.home-dock .dock-glass {
   left: 0;
   top: 0;
   z-index: 2;
-  border-radius: 47px;
+  border-radius: calc(47px * var(--dock-scale, 1));
   border: 3px solid rgba(255, 255, 255, 0.8);
   background: linear-gradient(180deg, rgba(255, 255, 255, 0.16), rgba(255, 255, 255, 0.03));
   box-shadow: 0 0 4px 2px rgba(255, 255, 255, 0.19), 0 0 12px 4px rgba(255, 255, 255, 0.08);
@@ -496,38 +467,21 @@ body.home-dock .dock-glass {
   transition: opacity 180ms ease, transform 520ms cubic-bezier(0.3, 1.35, 0.45, 1);
 }
 
-/* ---- Inputs dropdown (the inputs row, opened by the Inputs pill) ------------ */
+/* ---- menu rows: the inputs (moved into the menu) and the two settings ------- */
 
 body.home-dock #input-row {
-  display: none;
-}
-
-body.home-dock.dock-inputs-open #input-row {
   display: flex;
   flex-direction: column;
   flex-wrap: nowrap;
-  position: fixed;
-  z-index: 8;
   margin: 0;
-  padding: 16px;
-  border-radius: 40px;
-  border: 2px solid rgba(255, 255, 255, 0.2);
-  background: linear-gradient(180deg, rgba(42, 42, 46, 0.96), rgba(22, 22, 24, 0.97));
-  box-shadow: 0 30px 70px rgba(0, 0, 0, 0.5);
-  animation: dock-drop 220ms cubic-bezier(0.2, 0.8, 0.3, 1);
-  transform-origin: top;
-}
-
-@keyframes dock-drop {
-  from { opacity: 0; transform: translateY(-16px) scaleY(0.92); }
-  to { opacity: 1; transform: none; }
 }
 
 body.home-dock #input-row > * {
   margin: 0;
 }
 
-body.home-dock #input-row .input-chip {
+body.home-dock #input-row .input-chip,
+body.home-dock .dock-menu-row {
   display: flex;
   align-items: center;
   height: 84px;
@@ -544,6 +498,19 @@ body.home-dock #input-row .input-chip {
   text-align: left;
   white-space: nowrap;
   transform: none;
+  cursor: pointer;
+}
+
+body.home-dock .dock-menu-row {
+  width: 100%;
+  font-family: inherit;
+}
+
+body.home-dock .dock-menu-row svg {
+  flex: 0 0 auto;
+  width: 40px;
+  height: 40px;
+  margin-right: 20px;
 }
 
 /* An input plug; Live TV and Channels get their own glyphs. */
@@ -579,14 +546,15 @@ body.home-dock #input-row .input-chip.active::after {
   transform: translateX(16px);
 }
 
-body.home-dock #input-row .input-chip.focused {
+body.home-dock #input-row .input-chip.focused,
+body.home-dock .dock-menu-row.focused {
   background: rgba(255, 255, 255, 0.96);
   color: #000;
   box-shadow: none;
   transform: none;
 }
 
-/* ---- Channels strip (Channels in the dropdown) ------------------------------ */
+/* ---- Channels strip (Channels in the menu) ---------------------------------- */
 
 body.home-dock #channel-strip {
   position: absolute;

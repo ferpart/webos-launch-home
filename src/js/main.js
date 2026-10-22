@@ -473,8 +473,11 @@ const dock = createDockStyle({
   focusElement: function (el) {
     return focus.focusElement(el);
   },
-  onOpenNetworkSettings: function () {
-    openTvSettings({target: 'network'});
+  onOpenSettings: function () {
+    settings.show();
+  },
+  onOpenTvSettings: function () {
+    openTvSettings();
   },
   onToast: showToast
 });
@@ -496,7 +499,7 @@ const allApps = createAllApps({
 // is already opening just brings it forward.
 const SYSTEM_APP_ROOT_AFTER_MS = 1200;
 
-function launchSystemApp(id, params) {
+function launchSystemApp(id) {
   return new Promise(function (resolve, reject) {
     let settled = false;
     let failures = 0;
@@ -518,10 +521,10 @@ function launchSystemApp(id, params) {
     function startRoot() {
       if (rootStarted || settled) return;
       rootStarted = true;
-      launchAppViaRoot(id, params).then(succeed, failOne);
+      launchAppViaRoot(id).then(succeed, failOne);
     }
     rootTimer = setTimeout(startRoot, SYSTEM_APP_ROOT_AFTER_MS);
-    launchApp(id, params).then(succeed, function () {
+    launchApp(id).then(succeed, function () {
       clearTimeout(rootTimer);
       failOne();
       startRoot();
@@ -529,8 +532,7 @@ function launchSystemApp(id, params) {
   });
 }
 
-/** @param {object} [params] e.g. {target: 'network'} for its network page */
-async function openTvSettings(params) {
+async function openTvSettings() {
   // TV Settings opens as a panel over Launch Home, which stays on screen
   // underneath: pause its animations now rather than waiting for a blur event
   // (older webOS may not send one). Any key back in Launch Home clears it.
@@ -543,7 +545,7 @@ async function openTvSettings(params) {
   const ids = getAppIdCandidates('com.webos.app.settings');
   for (let i = 0; i < ids.length; i += 1) {
     try {
-      await launchSystemApp(ids[i], params);
+      await launchSystemApp(ids[i]);
       return;
     } catch (err) {
       // Try the next candidate id.
@@ -626,10 +628,9 @@ function updateClock() {
   const now = new Date();
 
   applyClockStyle();
-  // The greeting heads the clock: none when the clock is off.
-  dock.setGreeting(launcher.showClock
-    ? Number(clockParts(now, launcher.timezone || '', false).time.split(':')[0])
-    : null);
+  // The Dock's clock is its menu button, so it shows the time either way.
+  dock.setClock(clockParts(now, launcher.timezone || '', launcher.clockFormat === '12'),
+    formatClockDate(now, launcher.timezone || ''));
 
   if (launcher.showClock) {
     setClockTime(elements.clock, now, launcher.timezone || '', launcher.clockFormat === '12');
