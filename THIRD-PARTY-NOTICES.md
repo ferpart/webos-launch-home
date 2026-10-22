@@ -1,13 +1,14 @@
 # Third-party notices
 
-The Dock home style in this fork includes material from the projects below.
+The Apple TV-style home screen in this fork uses material from the projects below.
 
 ## webos-vibehack and tv-vibehack
 
-The Dock's layout, glass highlight, ambient glow and icon colour sampling
-(`src/js/dock-style.js`, `src/js/dock-colors.js`, `src/styles/dock.css`) are
-ported from [webos-vibehack](https://github.com/OmkarK97/webos-vibehack), a
-webOS port of [tv-vibehack](https://github.com/Gathin23/tv-vibehack).
+This fork ports the dock layout, the glass frame, the colour glow and the icon
+colour sampling from [webos-vibehack](https://github.com/OmkarK97/webos-vibehack).
+webos-vibehack is a webOS port of [tv-vibehack](https://github.com/Gathin23/tv-vibehack).
+The ported code is in `src/js/dock-style.js`, `src/js/dock-colors.js` and
+`src/styles/dock.css`.
 
 ```
 MIT License
@@ -36,7 +37,7 @@ SOFTWARE.
 
 ## Glasshouse
 
-`assets/app-banners/glasshouse.jpg` is drawn from the Glasshouse logo
+This fork makes `assets/app-banners/glasshouse.jpg` from the Glasshouse logo
 (`docs/logo/glasshouse.svg` in
 [Glasshouse](https://github.com/rorygallagher2024/glasshouse)).
 
@@ -72,7 +73,8 @@ Authors, licensed under the SIL Open Font License 1.1: see
 
 ## App banners
 
-`assets/app-banners/` holds tile art for third-party apps, made from each app's
-own launch art as installed on webOS (its splash screen, or its logo on its
-brand colour). The names, logos and artwork are trademarks and property of
-their respective owners, used only to label their apps on the home screen.
+`assets/app-banners/` contains tile art for apps from other companies. This
+fork makes each tile from the art that the app installs on webOS: its splash
+screen, or its logo on its brand colour. The names, logos and art are
+trademarks and property of their owners. This fork uses them only to label
+their apps on the home screen.

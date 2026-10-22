@@ -1,219 +1,260 @@
-# webOS Launch Home — Dock mod
+# Launch Home: Apple TV style
 
-A fork of [gprot42/webos-launch-home](https://github.com/gprot42/webos-launch-home) that adds an Apple TV-style **Dock** home style, after [OmkarK97/webos-vibehack](https://github.com/OmkarK97/webos-vibehack) (itself a webOS port of [Gathin23/tv-vibehack](https://github.com/Gathin23/tv-vibehack)). Everything else is Launch Home: same app id, Home-button watcher, boot on start, Homebrew Channel integration, app launching, input switching, settings and backups.
+An Apple TV-style home screen for rooted LG webOS TVs.
 
-![The Dock home style on an LG OLED C1 (webOS 6)](docs/screenshots/dock.jpg)
+This project is a fork of [Launch Home](https://github.com/gprot42/webos-launch-home) by gprot42. The Apple TV-style design comes from [webos-vibehack](https://github.com/OmkarK97/webos-vibehack) by OmkarK97, which ports [tv-vibehack](https://github.com/Gathin23/tv-vibehack) by Gathin. All of Launch Home stays: the same app, the same settings, and the same integration with the TV. See [Credits](#credits).
 
-### What the Dock style adds
+![The home screen on an LG OLED C1 with webOS 6](docs/screenshots/home.jpg)
 
-- **A dock and a grid.** The top row sits on a translucent shelf with the focused app's name above it; the rest of your apps are in a grid below that scrolls smoothly. 3 to 6 apps per row.
-- **Recently used.** The dock can show the apps you opened last (from a tile, by voice, or any other way), or keep your pinned order.
-- **Apple TV-style tiles.** Wide 16:9 art for common apps, made from each app's own webOS launch art; other apps get their icon on a blurred bleed of itself. The focused tile lifts with a soft shadow, a sheen, and a slight tilt that follows the Magic Remote's pointer; one glass highlight springs between tiles.
-- **An optional glow in the app's colour**: off by default, or soft behind the dock, or webos-vibehack's full screen.
-- **A clock, top right**, that opens a frosted menu with your inputs, Launch Home settings and TV Settings.
-- **Your wallpaper underneath**, including Apple's aerial videos.
-- The Outfit typeface, and nothing that blurs over the video except the menu while it's open. Works on webOS 6 (Chromium 79).
+## What it looks like
 
-Switch in **Settings → Look → Home style** (Dock or Classic). Classic is the original Launch Home, unchanged; the Dock's own options (apps per row, top row, glow) are in the same section. The clock also uses the TV's own time zone when none is chosen in Look → Timezone, for TVs whose system clock runs on GMT.
+The top row of apps is a dock, as on an Apple TV. The name of the app that you select shows in large type above the dock. Your other apps are in a grid below the dock.
 
-Install as below (`npm install && npm run pack`, then install the IPK). Your Launch Home settings carry over.
+![The grid of apps below the dock](docs/screenshots/grid.jpg)
 
-### Credits
+The clock at the top right opens a menu. The menu shows the date, your TV inputs, Launch Home settings and TV Settings.
 
-- [Launch Home](https://github.com/gprot42/webos-launch-home) by gprot42 and contributors: the app this is built on.
-- [webos-vibehack](https://github.com/OmkarK97/webos-vibehack) by OmkarK97, and [tv-vibehack](https://github.com/Gathin23/tv-vibehack) by Gathin: the dock and grid layout, glass highlight, glow and colour sampling ported here.
-- [Glasshouse](https://github.com/rorygallagher2024/glasshouse) by Rory Gallagher: its logo, for its tile.
-- [Outfit](https://github.com/Outfitio/Outfit-Fonts) typeface, SIL Open Font License 1.1.
+![The clock menu with inputs and settings](docs/screenshots/menu.jpg)
 
-See [THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md) for their licences. App names, logos and banner art are trademarks of their owners and are used only to label their apps.
+You set the home style in **Settings → Look → Home style**.
 
----
-
-## Launch Home
-
-A fullscreen home screen for rooted LG webOS TVs. Pick an app, switch inputs, and enjoy ambient background music — without the stock launcher clutter.
-
-![Launch Home on an LG TV](docs/screenshots/screengrab1.jpg)
-
-![Launch Home settings](docs/screenshots/screengrab2.jpg)
+![The Home style settings](docs/screenshots/settings.jpg)
 
 ## Features
 
-- App grid with pinned streaming apps, plus custom app tiles (pin any installed app by App ID with a bundled icon)
-- **Number keys** on the remote open the home row tile at that position (1–9); each tile shows its number, and it can be turned off in Settings → Apps
-- HDMI and TV input shortcuts with custom labels (uncheck all inputs to hide the row entirely); add any input the TV doesn't list (Settings → Inputs & channels → Add an input)
-- Scenic backgrounds (built-in, USB, **online nature + anime URLs**, or **Apple aerial videos** streamed from Apple's CDN — nothing shipped in the IPK) and built-in ambient music that keeps playing while settings are open
-- Frosted-glass tiles in a colour of your choice, with a matching or contrasting outline and selection highlight, previewed as you choose (Settings → Look → Glass: Tile colour, Tile outline, Selection highlight), to suit dark or bright wallpapers
-- Large centered clock with optional date, both independently toggleable, 24-hour or 12-hour
-- Weather for today and the next 4 days (Open-Meteo, no API key), with a city search and °C/°F in Settings
-- Compact volume control; optional music bar (track name) in Settings
-- **TV channels** — when the TV has Live TV channels tuned, a Channels button after the inputs opens a strip above them with what's on now and your LG favourite channels (or all of them); pick one to watch it
-- Optional TV system volume levels for Launch Home vs when apps launch (default “Don’t change” keeps the volume you set with the remote)
-- Adjustable icon size and left/center/right icon alignment
-- Launch Home icon set for popular apps, or switch it off to use each app’s own TV icon (needs root)
-- Dedicated app settings button and a TV Settings tile for quick access to system settings
-- **Add all apps from LG's home screen** in one press (Settings → Apps → Add an app), in LG's order, or pick installed apps one by one; no app ids to type
-- **Launch on Home button** — root watcher reopens Launch Home when stock Home appears
-- **Boot on TV start** — root init.d script launches Launch Home after power-on, and again when the TV wakes from standby with Quick Start+ on
-- **Backup & restore** — Settings → Tools saves all your Launch Home settings to the TV (kept when you reinstall Launch Home) and to a plugged-in USB drive (`lounge/launch-home-settings.json`) to move them to another TV. Launch Home also keeps its own copy before each restore and each update, and backups made by other versions restore as far as they fit, telling you what didn't (see [Backup & restore](#backup--restore)); needs root
-- **Voice assistant (optional)** — built in: the Magic Remote's Voice button answers with Grok, Gemini or OpenRouter, opens apps and controls the TV (see [Voice](#voice))
-- Remote-friendly navigation. Settings is a category list (Look, Music, Screensaver, Apps, Inputs & channels, Weather, System, AI Voice, Tools): Up/Down picks a category, Right or OK enters it, Left or Back returns to the list
+### Apple TV-style home screen
 
-## Voice
+- **Dock and grid.** The dock is on a translucent shelf. The grid scrolls when you move down. You can show 3, 4, 5 or 6 apps in each row.
+- **Recently used apps.** The dock can show the apps that you opened last. Launch Home records an app when you open it from a tile, by voice or in a different way. The dock changes when you go back to the home screen, not while you move through the tiles. You can also keep your pinned order.
+- **Wide tiles.** Popular apps get 16:9 tiles. Each tile comes from the art that the app installs on webOS. Other apps show their icon on a blurred copy of the same icon.
+- **Focus effects.** The selected tile becomes larger and gets a soft shadow and a light sheen. One glass frame moves between the tiles. When you point at the selected tile with the Magic Remote, the tile tilts a small amount.
+- **Clock menu.** The clock is at the top right, as on an Apple TV. Press it to open a frosted menu. The menu switches inputs and opens Launch Home settings or TV Settings.
+- **Your wallpaper.** The home screen shows your wallpaper behind the tiles. This includes the Apple aerial videos.
+- **Optional colour glow.** A glow in the colour of the selected app can show behind the dock or across the full screen. The glow is off by default.
+- **Correct local time.** If you do not select a time zone, the clock uses the time zone and offset from the TV settings. Some TVs keep their system clock on GMT, and this setting corrects the clock on those TVs.
+- **webOS 6 support.** The home screen works with the Chromium 79 browser engine of webOS 6. Only the open menu uses a blur effect over the video.
 
-Launch Home has its own voice assistant for the Magic Remote's **Voice** button, built in and **off by default**. Turn it on in **Settings → AI Voice → Voice assistant** (needs root through Homebrew Channel). Then add an xAI (Grok) key or sign in with SuperGrok, or use a Gemini or OpenRouter key, and press Save.
+### Classic style
 
-**What you can say:** open apps (“open Netflix”), volume up/down/mute or a level, channel up/down or a number, switch inputs (“HDMI 2”), captions on/off, a sleep timer, “turn off the TV”, the weather, and any other question, which is answered on screen and spoken aloud.
+Launch Home's original home screen stays available. Set **Settings → Look → Home style** to **Classic** to use it.
 
-**While it's on, Launch Home:**
+![The Classic style](docs/screenshots/classic.jpg)
 
-- Shows a small **mic badge** top-right while it listens.
-- Opens the apps it asks for from the foreground (the reliable way to bring native apps such as Prime Video to the front).
-- Runs its daemon (`voice/daemon`, Python 3, runs as root) from the Launch Home app folder, restarts it after updates, and starts it at power-on (`/var/lib/webosbrew/init.d/45-launch-home-voice`).
-- Installs a small hidden app, **Launch Home Voice** (`org.webosbrew.lounge.voice`), that shows the question and answer and plays the spoken reply.
+### Launch Home features in both styles
 
-Turning it off stops the daemon, removes the boot hook and the voice card, and gives the Voice button back to LG. Your settings and SuperGrok sign-in stay in `/home/root/.config/launch-home-voice` for next time. The log is `/tmp/launch-home-voice.log`.
+- Pinned apps, plus custom app tiles. You can pin any installed app by its app ID.
+- **Add all apps from LG's home screen** in one step, in LG's order (Settings → Apps → Add an app). You can also select apps one at a time.
+- **Number keys** (optional). Keys 1–9 open the tile that shows that number. The numbers follow your pinned order.
+- HDMI and TV inputs with your own labels. You can add an input that the TV does not show.
+- **TV channels.** If the TV has Live TV channels, a Channels item shows what is on now and your LG favourite channels.
+- Wallpapers: built-in photos, photos from USB, online photos, or **Apple aerial videos** that stream from Apple. The package does not include the videos.
+- Ambient music, with volume control from the remote.
+- Weather for today and the next 4 days (Open-Meteo, no API key). The weather shows in the Classic style.
+- Optional TV volume levels for Launch Home and for other apps.
+- A Launch Home screensaver with a slideshow and a clock.
+- **Launch on Home button.** A root watcher opens Launch Home again when the LG home screen shows.
+- **Boot on TV start.** A root script opens Launch Home after power-on. It also opens Launch Home when the TV wakes from standby with Quick Start+ on.
+- **Backup and restore** of all settings, to the TV and to a USB drive. See [Backup and restore](#backup-and-restore).
+- **Voice assistant** (optional). See [Voice](#voice).
 
-**Other voice assistants.** Everything above belongs to Launch Home alone: its own port (`127.0.0.1:8678`), files, settings and app ids. Launch Home only talks to a voice service that identifies itself as its own, and never stops or changes another assistant such as VoxRelay. If VoxRelay is also running or installed, the AI Voice tab warns you, because both would answer the Voice button.
+## Remote control
 
-**Interface** (between Launch Home and its daemon). On `ws://127.0.0.1:8678` Launch Home first sends `{"type": "hello", "params": {"role": "launcher"}}` and continues only if the reply names `launch-home-voice`. The daemon sends JSON `{"event": …, "payload": …}`:
+| Key | On the home screen |
+| --- | --- |
+| Left, Right | Move between tiles |
+| Up, Down | Move between rows. Up from the dock goes to the clock. |
+| OK | Open the app, or open the clock menu |
+| Back | Close the menu or Settings |
+| 1–9 | Open the tile with that number badge (if Number keys is on) |
+| Volume, Red, Green | Change, pause or skip the ambient music |
+| Blue, Channel Up | Show the next aerial video |
+| Channel Down | Show the previous aerial video |
 
-| Event | Payload | Launch Home |
-|---|---|---|
-| `sessionStarted`, `sessionCatchup` | `listening: true` (or `early: true` / `reason: "button_press"`) | show mic badge |
-| `listeningEnded`, `sessionEnded`, `error` | — | hide mic badge |
-| `appLaunch` | `id`, `ids[]`, `spoken` | launch that app |
-| `transcriptFinal` | `text` | "open …/launch …" matched against the dock |
+In the clock menu, Up and Down move between items. Left or Back closes the menu.
 
-AI Voice settings are requests `{"type": …, "params": …, "id": …}`, answered with `{"event": "configResult", "id", "ok", "result"|"error"}`. The requests are `getConfig` (values plus `options`, the picker choices), `setConfig`, `getStatus`, and the SuperGrok sign-in requests `startSuperGrokLogin`, `cancelSuperGrokLogin`, `signOutSuperGrok` and `importSuperGrokAuth`.
+## Settings for the Apple TV style
 
-## Backup & restore
+All of these settings are in **Settings → Look → Home style**.
 
-**Settings → Tools → Backup & restore** (needs root through Homebrew Channel):
+| Setting | Values | Default |
+| --- | --- | --- |
+| Layout | Dock (Apple TV style), Classic (original) | Dock |
+| Dock: apps per row | 3, 4, 5, 6 | 4 |
+| Dock: top row shows | Recently used, Pinned order | Recently used |
+| Dock: glow in the app's colour | Off, Soft (behind the dock), Full screen | Off |
 
-- **Back up settings** saves everything you set in Launch Home to `/home/root/.config/launch-home/settings-backup.json` on the TV, and to `lounge/launch-home-settings.json` on a plugged-in USB drive. Voice keys and the SuperGrok sign-in aren't included; they stay in `/home/root/.config/launch-home-voice`.
-- **Restore settings** lists every backup it finds: yours, the USB drive's, and the copies Launch Home keeps by itself in `/home/root/.config/launch-home/auto/` (one from before your last restore, and the settings from before each of the last three updates). Pick one and press **Restore this backup**.
+The Glass, icon size and icon layout settings apply only to the Classic style. To use the TV's own app icons instead of the wide tiles, turn off **Use Launch Home app icons** in Settings → Look → Clock & icons.
 
-Launch Home is young and its settings still change between versions, so a backup made by one version can be restored by another:
+## Requirements
 
-- Each backup file records the Launch Home version that wrote it and its settings layout version.
-- **Older backup:** its settings are updated by the same steps Launch Home uses when you update it.
-- **Newer backup:** settings this version doesn't have are kept but not used.
-- A setting that doesn't fit (for example, a number where this version expects text) keeps your current value. After a restore, the status line lists every setting that was skipped or not used.
-- The voice assistant's on/off setting belongs to each TV and isn't restored.
-- To undo a restore, restore the copy marked **before your last restore**. To go back to an older Launch Home, restore the copy marked **before updating** that it wrote.
+- An LG TV with webOS, rooted, with [Homebrew Channel](https://github.com/webosbrew/webos-homebrew-channel) and SSH.
+- Root permission through Homebrew Channel. Launch Home needs root to read the full app list, to catch the Home button and to start at boot. See [Run Launch Home as root](#run-launch-home-as-root).
 
-## Compatibility
+### Compatibility
 
 | webOS version | Status | Notes |
 | --- | --- | --- |
-| webOS 25 (sdk ~10) | Working | Primary test platform — LG OLED55C56LB |
-| webOS 6–9 / 22–24 | Expected working | Same Luna APIs as 25; not fully regression-tested here |
-| webOS 5.x | Expected working | Use project-local `@webos-tools/cli` for packaging (epoch tar fix) |
-| webOS 4.x | Working (reported) | Home watcher + boot-on-start use webOS 4–safe `luna-send` fallbacks; backgrounds viewable on device (see below) |
+| webOS 6 (6.5.3) | Working, Apple TV style tested | LG OLED65C1PSA |
+| webOS 25 (sdk ~10) | Working | Launch Home's main test TV (LG OLED55C56LB) |
+| webOS 6–9 / 22–24 | Expected to work | Same Luna APIs as webOS 25 |
+| webOS 5.x | Expected to work | Package with the project's own `@webos-tools/cli` |
+| webOS 4.x | Working (reported) | The Home watcher and boot script use `luna-send` fallbacks for webOS 4 |
 
-**Requirements:** rooted TV with [Homebrew Channel](https://github.com/webosbrew/webos-homebrew-channel) and SSH. Root elevation is required for full app scanning, Home-button intercept, and boot-on-start.
+**webOS 4 notes:**
 
-### webOS 4.x notes
-
-- **Background JPEGs on device.** Built-in scenic images ship inside the app package. On webOS 4 you can browse them directly under:
-
-  ```text
-  /media/developer/apps/usr/palm/applications/org.webosbrew.lounge.launcher/assets/backgrounds/
-  ```
-
-  (Some file managers list this as `…/assets/background`.)
-
-- **Online backgrounds.** Settings → Background → **Online URL (nature + anime)** opens a thumbnail gallery of curated Unsplash nature photos plus popular free anime-style wallpapers (or paste your own https image URL). Photos load over the network so the package stays small. See [docs/background-sources.md](docs/background-sources.md).
-
-- **Home button / Boot on start.** Both install hooks under `/var/lib/webosbrew/init.d/` via the elevated Homebrew Channel service. Toggle the setting **off → Save → on → Save** after an update if either stops working. Confirm Homebrew startup is installed (see [Running elevated as root](#running-elevated-as-root-required-for-app-scanning)).
+- The built-in wallpapers are in the app package. You can find them on the TV in `/media/developer/apps/usr/palm/applications/org.webosbrew.lounge.launcher/assets/backgrounds/`.
+- Settings → Background → **Online URL** shows a gallery of online nature and anime photos. You can also paste an https image URL. See [docs/background-sources.md](docs/background-sources.md).
+- If the Home button or Boot on start stops after an update, set the setting to off, save, set it to on, and save again.
 
 ## Install
 
-Requires a rooted LG TV with [Homebrew Channel](https://github.com/webosbrew/webos-homebrew-channel) and SSH enabled.
+1. Get the code and the build tools:
 
-```bash
-npm install
-./install2tvfrommacos.sh
-```
+   ```bash
+   git clone https://github.com/ferpart/webos-launch-home.git
+   cd webos-launch-home
+   npm install
+   ```
 
-Set your TV's IP if needed:
+2. Build the package and install it on the TV. On macOS, use the install script:
 
-```bash
-TV_IP=192.168.0.79 ./install2tvfrommacos.sh
-```
+   ```bash
+   TV_IP=192.168.0.79 ./install2tvfrommacos.sh
+   ```
 
-Or build manually:
+   Or build the package and install it with `ares-install`:
 
-```bash
-npm run pack
-ares-install --device webos dist/*.ipk
-```
+   ```bash
+   npm run pack
+   ares-install --device webos dist/*.ipk
+   ```
 
-`npm run pack` uses the project-local `@webos-tools/cli` and rejects files dated `1970-01-01`. That epoch stamp is a `@webosose/ares-cli` + Node.js 22+ bug; some TVs (webOS 5) refuse to install those packages. Do not package with `@webosose/ares-cli` on modern Node.
+The app ID is the same as Launch Home's (`org.webosbrew.lounge.launcher`). If Launch Home is on your TV, this package replaces it and keeps your settings.
 
-## Running elevated as root (required for app scanning)
+`npm run pack` uses the project's own `@webos-tools/cli`. It rejects files with the date `1970-01-01`. The older `@webosose/ares-cli` writes that date with Node.js 22 or later, and some webOS 5 TVs do not install those packages.
 
-**Why this is required.** Retail webOS only returns the *full* list of installed
-apps (`luna://com.webos.applicationManager/listApps`) to **privileged (root)
-clients**. A normal sandboxed web app can only see its own launch points, so the
-built-in **Scan for apps** feature returns nothing unless the launcher runs with
-elevated (root) Luna privileges. On a rooted TV that elevation is provided by the
-[Homebrew Channel](https://github.com/webosbrew/webos-homebrew-channel) root
-service (`luna://org.webosbrew.hbchannel.service/exec`), which executes as root.
+## Run Launch Home as root
 
-Home-button intercept and Boot on TV start use the same root service to install
-`/var/lib/webosbrew/init.d/` hooks. Those hooks run when the TV boots. With
-**Quick Start+** on, the power button only suspends and wakes the TV, so the
-hooks don't run again until a full restart. Boot on TV start handles this by
-staying in the background after boot and reopening Launch Home whenever the TV
-wakes from standby (it also starts doing this as soon as you turn the setting
-on, without waiting for a restart). Turning Quick Start+ off under General →
-Devices → TV Management makes every power-on a full boot instead.
+Retail webOS gives the full list of installed apps only to root clients. A normal web app sees only its own launch points. So **Scan for apps** finds nothing unless Launch Home has root permission. On a rooted TV, the Homebrew Channel root service (`luna://org.webosbrew.hbchannel.service/exec`) gives this permission.
 
-### 1. Elevate (grants root)
+The Home button watcher and Boot on TV start also use the root service. They install scripts in `/var/lib/webosbrew/init.d/`, and the TV runs these scripts at boot. With **Quick Start+** on, the power button only puts the TV into standby. So the scripts do not run again until a full restart. To solve this, Boot on TV start stays in the background and opens Launch Home each time the TV wakes. To make each power-on a full boot, set Quick Start+ to off in General → Devices → TV Management.
 
-SSH into the TV (the installer already provisions `root@TV_IP` key auth) and run
-the Homebrew Channel elevation helper:
+1. Get root permission. Connect to the TV with SSH, and run the Homebrew Channel elevation script:
 
-```bash
-ssh root@TV_IP
-/media/developer/apps/usr/palm/services/org.webosbrew.hbchannel.service/elevate-service
-```
+   ```bash
+   ssh root@TV_IP
+   /media/developer/apps/usr/palm/services/org.webosbrew.hbchannel.service/elevate-service
+   ```
 
-### 2. Persist across reboots and app updates
+2. Keep root permission after reboots and app updates. Copy the Homebrew Channel startup script to the boot location:
 
-Copy the Homebrew Channel startup script into the boot location so elevation is
-re-applied automatically on every boot:
+   ```bash
+   cp /media/developer/apps/usr/palm/services/org.webosbrew.hbchannel.service/startup.sh \
+      /var/lib/webosbrew/startup.sh
+   ```
 
-```bash
-cp /media/developer/apps/usr/palm/services/org.webosbrew.hbchannel.service/startup.sh \
-   /var/lib/webosbrew/startup.sh
-```
+   This file is outside the app folder. An update of Launch Home does not remove it.
 
-This lives **outside** the app directory
-(`/media/developer/apps/usr/palm/applications/org.webosbrew.lounge.launcher`), so
-reinstalling or updating the Launch Home `.ipk` does **not** remove it —
-root elevation survives app updates.
+3. (Optional) Get root permission again at each boot. Homebrew Channel runs each executable file in `/var/lib/webosbrew/init.d` as root at boot. Add this file:
 
-### 3. (Optional) Force re-elevation on every boot
+   ```bash
+   mkdir -p /var/lib/webosbrew/init.d
+   cat > /var/lib/webosbrew/init.d/30-lounge-elevate <<'EOF'
+   #!/bin/sh
+   /media/developer/apps/usr/palm/services/org.webosbrew.hbchannel.service/elevate-service
+   EOF
+   chmod +x /var/lib/webosbrew/init.d/30-lounge-elevate
+   ```
 
-Homebrew Channel runs any executable placed in `/var/lib/webosbrew/init.d` at
-boot as root. Add a hook so the service is always re-elevated after an update:
+> **Note:** A TV firmware update can remove root. If app scanning stops after a firmware update, root the TV again, install Homebrew Channel again, and do steps 1 and 2 again.
 
-```bash
-mkdir -p /var/lib/webosbrew/init.d
-cat > /var/lib/webosbrew/init.d/30-lounge-elevate <<'EOF'
-#!/bin/sh
-/media/developer/apps/usr/palm/services/org.webosbrew.hbchannel.service/elevate-service
-EOF
-chmod +x /var/lib/webosbrew/init.d/30-lounge-elevate
-```
+## Voice
 
-> Note: A full **TV firmware update** can reset root. If app scanning stops
-> working after a system update, re-root the TV / reinstall Homebrew Channel and
-> repeat steps 1–2.
+Launch Home has its own voice assistant for the **Voice** button of the Magic Remote. The assistant is **off by default**.
+
+To use it:
+
+1. Go to **Settings → AI Voice → Voice assistant** and set it to on. This needs root through Homebrew Channel.
+2. Add an xAI (Grok) key, sign in with SuperGrok, or add a Gemini or OpenRouter key.
+3. Press Save.
+
+**What you can say:**
+
+- Open an app ("open Netflix").
+- Change or mute the volume.
+- Change the channel.
+- Switch the input ("HDMI 2").
+- Turn captions on or off.
+- Set a sleep timer.
+- Turn off the TV.
+- Ask for the weather.
+
+The assistant answers other questions on the screen and speaks the answer.
+
+**When the assistant is on, Launch Home:**
+
+- Shows a small microphone badge while it listens.
+- Opens the apps that you ask for from the foreground. This is the reliable way to open native apps such as Prime Video.
+- Runs its daemon (`voice/daemon`, Python 3, as root) from the app folder. Launch Home restarts the daemon after updates and starts it at power-on (`/var/lib/webosbrew/init.d/45-launch-home-voice`).
+- Installs a small hidden app, **Launch Home Voice** (`org.webosbrew.lounge.voice`). This app shows the question and the answer, and plays the spoken reply.
+
+When you set the assistant to off, Launch Home stops the daemon and removes the boot script and the voice app. The Voice button then goes back to LG. Your settings and SuperGrok sign-in stay in `/home/root/.config/launch-home-voice`. The log is in `/tmp/launch-home-voice.log`.
+
+**Other voice assistants.** The assistant uses its own port (`127.0.0.1:8678`), files, settings and app IDs. Launch Home talks only to a voice service that identifies itself as its own. It does not stop or change a different assistant, such as VoxRelay. If VoxRelay runs or is on the TV, the AI Voice tab shows a warning, because both assistants would answer the Voice button.
+
+**Interface between Launch Home and the daemon.** Launch Home connects to `ws://127.0.0.1:8678`. It first sends `{"type": "hello", "params": {"role": "launcher"}}`. It continues only if the reply names `launch-home-voice`. The daemon then sends JSON events in the form `{"event": …, "payload": …}`:
+
+| Event | Payload | What Launch Home does |
+|---|---|---|
+| `sessionStarted`, `sessionCatchup` | `listening: true` (or `early: true` / `reason: "button_press"`) | Shows the microphone badge |
+| `listeningEnded`, `sessionEnded`, `error` | — | Hides the microphone badge |
+| `appLaunch` | `id`, `ids[]`, `spoken` | Opens that app |
+| `transcriptFinal` | `text` | Finds "open …" or "launch …" in the dock and opens the app |
+
+The AI Voice settings use requests in the form `{"type": …, "params": …, "id": …}`. The daemon answers with `{"event": "configResult", "id", "ok", "result"|"error"}`. The requests are:
+
+- `getConfig`: the values, plus `options` (the choices for each picker)
+- `setConfig`
+- `getStatus`
+- SuperGrok sign-in: `startSuperGrokLogin`, `cancelSuperGrokLogin`, `signOutSuperGrok` and `importSuperGrokAuth`
+
+## Backup and restore
+
+Go to **Settings → Tools → Backup & restore**. This needs root through Homebrew Channel.
+
+- **Back up settings** saves all your Launch Home settings to two locations:
+  - On the TV: `/home/root/.config/launch-home/settings-backup.json`
+  - On a USB drive, if you connect one: `lounge/launch-home-settings.json`
+
+  The backup does not include voice keys or the SuperGrok sign-in. They stay in `/home/root/.config/launch-home-voice`.
+- **Restore settings** shows all the backups that it finds. This includes your backups and the copies that Launch Home makes by itself in `/home/root/.config/launch-home/auto/`. Launch Home makes one copy before each restore, and one copy before each of the last three updates. Select a backup and press **Restore this backup**.
+
+A backup from one version of Launch Home can go into a different version:
+
+- Each backup file records the Launch Home version and the settings layout version that made it.
+- **Older backup:** Launch Home updates its settings with the same steps that it uses for an app update.
+- **Newer backup:** Launch Home keeps the settings that this version does not know, but does not use them.
+- If a setting does not fit (for example, a number where this version expects text), Launch Home keeps your current value. After the restore, the status line lists each setting that it skipped or did not use.
+- The voice assistant's on/off setting belongs to each TV. A restore does not change it.
+- To undo a restore, restore the copy marked **before your last restore**. To go back to an older version of Launch Home, restore the copy marked **before updating** from that version.
+
+## Credits
+
+This project uses the work of these people and projects:
+
+- **[Launch Home](https://github.com/gprot42/webos-launch-home)** by gprot42 and its contributors. This project is a fork of Launch Home. The app, its settings, and its integration with the TV are their work.
+- **[webos-vibehack](https://github.com/OmkarK97/webos-vibehack)** by OmkarK97, and **[tv-vibehack](https://github.com/Gathin23/tv-vibehack)** by Gathin. The dock and grid layout, the glass frame, the colour glow and the icon colour sampling come from these projects.
+- **[Glasshouse](https://github.com/rorygallagher2024/glasshouse)** by Rory Gallagher. Its logo is the art for its tile.
+- **[Outfit](https://github.com/Outfitio/Outfit-Fonts)**, the typeface of the Apple TV style, by The Outfit Project Authors.
+
+This project is not made by, or connected to, Apple or LG. "Apple TV" names the design style only.
 
 ## License
 
-[MIT](LICENSE). The bundled wallpapers, music and app icons keep their own terms; see [docs/background-sources.md](docs/background-sources.md) for the online wallpaper sources.
+This project uses the [MIT License](LICENSE), the same as Launch Home:
+
+- The `LICENSE` file keeps the original Launch Home copyright notice. MIT requires this notice in all copies. The file also adds a copyright line for the Apple TV-style changes.
+- The code from webos-vibehack and tv-vibehack, and the Glasshouse logo, are also under the MIT License. Their notices are in [THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md).
+- The Outfit typeface uses the SIL Open Font License 1.1. See [assets/fonts/OFL.txt](assets/fonts/OFL.txt).
+- App names, logos and tile art belong to their owners. This project uses them only to label the apps.
+- The built-in wallpapers, music and app icons keep their own terms. For the online wallpapers, see [docs/background-sources.md](docs/background-sources.md).
