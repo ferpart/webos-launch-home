@@ -91,6 +91,13 @@ The Glass, icon size and icon layout settings apply only to the Classic style. T
 - An LG TV with webOS, rooted, with [Homebrew Channel](https://github.com/webosbrew/webos-homebrew-channel) and SSH.
 - Root permission through Homebrew Channel. Launch Home needs root to read the full app list, to catch the Home button and to start at boot. See [Run Launch Home as root](#run-launch-home-as-root).
 
+### Recommended tools
+
+These projects work well with this home screen:
+
+- **[Can I Root My TV?](https://cani.rootmy.tv/)** Use this site to root your TV. It shows the root exploit that works for your TV model and firmware version, with the instructions. Root your TV and install Homebrew Channel before you install this home screen.
+- **[Glasshouse](https://github.com/rorygallagher2024/glasshouse)** Use this project to debloat your TV. It runs on the rooted TV and gives you a dashboard. Use the dashboard to remove LG's ads, stop LG's data collection, and remove apps that you do not use. It also gives privacy controls, OLED panel care and a Home Assistant bridge. With Glasshouse installed, its dashboard app gets its own tile on this home screen.
+
 ### Compatibility
 
 | webOS version | Status | Notes |
