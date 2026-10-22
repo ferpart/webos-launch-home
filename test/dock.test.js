@@ -2,10 +2,11 @@ import {afterEach, beforeEach, describe, expect, it, vi} from 'vitest';
 import {REMOTE_KEY} from '../src/js/remote.js';
 import {
   createDockStyle,
+  dockColumnsOf,
+  dockGeometry,
   dockScrollOffset,
   dockTileLeft,
   dockTileTop,
-  greetingFor,
   homeStyleOf
 } from '../src/js/dock-style.js';
 import {hsvToRgb, rgbToHsv, vividColor, NEUTRAL_GLOW} from '../src/js/dock-colors.js';
@@ -38,32 +39,51 @@ describe('home style setting', () => {
 });
 
 describe('dock layout', () => {
-  it('puts four tiles per row, the dock first', () => {
-    expect(dockTileLeft(0)).toBe(144);
-    expect(dockTileLeft(3)).toBe(1416);
-    expect(dockTileLeft(4)).toBe(144);
-    expect(dockTileTop(0)).toBe(708);
-    expect(dockTileTop(3)).toBe(708);
+  const four = dockGeometry(4);
+
+  it('reads apps per row, 3 to 6, four by default', () => {
+    expect(dockColumnsOf({launcher: {}})).toBe(4);
+    expect(dockColumnsOf({launcher: {dockColumns: 6}})).toBe(6);
+    expect(dockColumnsOf({launcher: {dockColumns: '5'}})).toBe(5);
+    expect(dockColumnsOf({launcher: {dockColumns: 9}})).toBe(4);
+    expect(DEFAULT_CONFIG.launcher.dockColumns).toBe(4);
+  });
+
+  it('puts the dock first, then rows below', () => {
+    expect(four.tileW).toBe(360);
+    expect(four.tileH).toBe(202);
+    expect(dockTileLeft(0, four)).toBe(144);
+    expect(dockTileLeft(3, four)).toBe(1416);
+    expect(dockTileLeft(4, four)).toBe(144);
+    expect(dockTileTop(0, four)).toBe(708);
+    expect(dockTileTop(3, four)).toBe(708);
     // A gap below the dock, then a row every 292px.
-    expect(dockTileTop(4)).toBe(1036);
-    expect(dockTileTop(8)).toBe(1328);
+    expect(dockTileTop(4, four)).toBe(1036);
+    expect(dockTileTop(8, four)).toBe(1328);
+  });
+
+  it('shrinks tiles to fit more across, keeping 16:9 and the dock\'s bottom edge', () => {
+    [3, 5, 6].forEach(function (n) {
+      const g = dockGeometry(n);
+      expect(Math.abs(g.tileW / g.tileH - 360 / 202)).toBeLessThan(0.02);
+      expect(g.dockTop + g.tileH).toBe(910);
+      // The row is centred inside the side margins.
+      const left = dockTileLeft(0, g);
+      const right = 1920 - (dockTileLeft(n - 1, g) + g.tileW);
+      expect(left).toBeGreaterThanOrEqual(112);
+      expect(Math.abs(left - right)).toBeLessThan(1);
+    });
+    expect(dockGeometry(6).tileW).toBeLessThan(dockGeometry(5).tileW);
+    expect(dockTileTop(6, dockGeometry(6))).toBeGreaterThan(dockTileTop(5, dockGeometry(6)));
   });
 
   it('scrolls just enough for the focused row, never for the dock', () => {
-    expect(dockScrollOffset(2, 300)).toBe(0);
-    expect(dockScrollOffset(5, 0)).toBe(248);
-    expect(dockScrollOffset(9, 248)).toBe(540);
+    expect(dockScrollOffset(2, 300, four)).toBe(0);
+    expect(dockScrollOffset(5, 0, four)).toBe(248);
+    expect(dockScrollOffset(9, 248, four)).toBe(540);
     // Back up a row: stays while it is still on screen, else only as far as it needs.
-    expect(dockScrollOffset(5, 540)).toBe(540);
-    expect(dockScrollOffset(5, 1000)).toBe(1036 - 24 - 80);
-  });
-
-  it('greets by the hour', () => {
-    expect(greetingFor(3)).toBe('Good night');
-    expect(greetingFor(9)).toBe('Good morning');
-    expect(greetingFor(14)).toBe('Good afternoon');
-    expect(greetingFor(20)).toBe('Good evening');
-    expect(greetingFor(23)).toBe('Good night');
+    expect(dockScrollOffset(5, 540, four)).toBe(540);
+    expect(dockScrollOffset(5, 1000, four)).toBe(1036 - 24 - 80);
   });
 });
 
@@ -97,6 +117,7 @@ describe('app banners', () => {
     expect(appBannerFor('netflix')).toBe('assets/app-banners/netflix.jpg');
     expect(appBannerFor('amazon.html')).toBe('assets/app-banners/prime-video.jpg');
     expect(appBannerFor('amazon')).toBe('assets/app-banners/prime-video.jpg');
+    expect(appBannerFor('com.tvweb.dashboard')).toBe('assets/app-banners/glasshouse.jpg');
     expect(appBannerFor('com.example.none')).toBe('');
     expect(appBannerFor('')).toBe('');
   });
@@ -105,120 +126,141 @@ describe('app banners', () => {
 describe('dock remote handling', () => {
   let dock;
   let elements;
+  let classicParent;
+  const onOpenSettings = vi.fn();
+  const onOpenTvSettings = vi.fn();
   const focusElement = vi.fn(function (el) {
     el.focus();
     return true;
   });
 
-  function button(id, parent, cls) {
-    const b = document.createElement('button');
-    if (id) b.id = id;
-    b.className = (cls || '') + ' focusable';
-    parent.appendChild(b);
-    return b;
+  function make(tag, id, parent, cls) {
+    const node = document.createElement(tag);
+    if (id) node.id = id;
+    if (cls) node.className = cls;
+    parent.appendChild(node);
+    return node;
   }
 
   beforeEach(() => {
     document.body.innerHTML = '';
-    const app = document.createElement('div');
-    app.id = 'app';
-    document.body.appendChild(app);
-    ['dock-hero', 'dock-glass', 'dock-band', 'dock-greeting', 'dock-ambient-a', 'dock-ambient-b']
-      .forEach(function (id) {
-        const d = document.createElement('div');
-        d.id = id;
-        app.appendChild(d);
-      });
-    const wifiLabel = document.createElement('span');
-    wifiLabel.id = 'dock-wifi-label';
-    app.appendChild(wifiLabel);
-    const top = document.createElement('div');
-    app.appendChild(top);
-    const inputsBtn = button('dock-inputs-btn', top);
-    button('dock-wifi-btn', top);
-    const settingsBtn = button('app-settings-btn', top);
-    const launcher = document.createElement('main');
-    app.appendChild(launcher);
-    const inputRow = document.createElement('nav');
-    launcher.appendChild(inputRow);
-    button('', inputRow, 'input-chip');
-    button('', inputRow, 'input-chip active');
-    const shell = document.createElement('div');
-    launcher.appendChild(shell);
-    const grid = document.createElement('section');
-    shell.appendChild(grid);
+    const app = make('div', 'app', document.body);
+    ['dock-hero', 'dock-glass', 'dock-band', 'dock-ambient-a', 'dock-ambient-b']
+      .forEach(function (id) { make('div', id, app); });
+    const top = make('header', '', app);
+    make('button', 'dock-menu-btn', top, 'focusable');
+    make('span', 'dock-menu-time', top);
+    const menu = make('div', 'dock-menu', top);
+    make('div', 'dock-menu-date', menu);
+    make('div', 'dock-menu-inputs', menu);
+    make('button', 'dock-menu-settings', menu, 'focusable');
+    make('button', 'dock-menu-tv', menu, 'focusable');
+    const launcher = make('main', '', app);
+    classicParent = launcher;
+    const inputRow = make('nav', 'input-row', launcher);
+    make('button', '', inputRow, 'input-chip focusable');
+    make('button', '', inputRow, 'input-chip active focusable');
+    const shell = make('div', '', launcher);
+    const grid = make('section', '', shell);
     for (let i = 0; i < 6; i += 1) {
-      const t = button('', grid, 'app-tile');
-      t.setAttribute('aria-label', 'App ' + i);
+      make('button', '', grid, 'app-tile focusable').setAttribute('aria-label', 'App ' + i);
     }
+    make('button', '', grid, 'app-tile settings-tile focusable');
     elements = {
       app: app, launcher: launcher, appGridShell: shell, appGrid: grid,
-      inputRow: inputRow, channelStrip: null, appSettingsBtn: settingsBtn, inputsBtn: inputsBtn
+      inputRow: inputRow, channelStrip: null
     };
-    dock = createDockStyle({elements: elements, focusElement: focusElement, onToast: vi.fn()});
+    dock = createDockStyle({
+      elements: elements,
+      focusElement: focusElement,
+      onOpenSettings: onOpenSettings,
+      onOpenTvSettings: onOpenTvSettings,
+      onToast: vi.fn()
+    });
     dock.apply({launcher: {homeStyle: 'dock'}});
   });
 
   afterEach(() => {
     dock.apply({launcher: {homeStyle: 'classic'}});
     focusElement.mockClear();
+    onOpenSettings.mockClear();
+    onOpenTvSettings.mockClear();
   });
 
-  it('greets only while there is a clock to head', () => {
-    dock.setGreeting(9);
-    expect(document.getElementById('dock-greeting').textContent).toBe('Good morning');
-    dock.setGreeting(null);
-    expect(document.getElementById('dock-greeting').textContent).toBe('');
-  });
+  function tile(i) {
+    return elements.appGrid.querySelectorAll('.app-tile')[i];
+  }
 
   it('lays the tiles out and shows the focused dock app\'s name', () => {
-    const tiles = elements.appGrid.querySelectorAll('.app-tile');
     expect(document.body.classList.contains('home-dock')).toBe(true);
-    expect(tiles[4].style.top).toBe('1036px');
-    expect(tiles[0].classList.contains('dock-row')).toBe(true);
-    expect(tiles[4].classList.contains('dock-row')).toBe(false);
-    tiles[2].focus();
+    expect(tile(4).style.top).toBe('1036px');
+    expect(tile(0).classList.contains('dock-row')).toBe(true);
+    expect(tile(4).classList.contains('dock-row')).toBe(false);
+    // TV Settings is in the menu, not the grid.
+    expect(tile(6).style.top).toBe('');
+    tile(2).focus();
     expect(document.getElementById('dock-hero').textContent).toBe('App 2');
   });
 
-  it('goes up from the dock to a pill and back down to the same tile', () => {
-    const tiles = elements.appGrid.querySelectorAll('.app-tile');
-    tiles[1].focus();
-    expect(dock.handleArrow(REMOTE_KEY.UP, tiles[1])).toBe(true);
-    const pill = document.activeElement;
-    expect(pill.id).toMatch(/dock-|app-settings-btn/);
-    expect(dock.handleArrow(REMOTE_KEY.DOWN, pill)).toBe(true);
-    expect(document.activeElement).toBe(tiles[1]);
-    // Grid rows are focus.js's own.
-    expect(dock.handleArrow(REMOTE_KEY.UP, tiles[4])).toBe(false);
+  it('re-lays out for another number of apps per row', () => {
+    dock.apply({launcher: {homeStyle: 'dock', dockColumns: 6}});
+    expect(tile(5).classList.contains('dock-row')).toBe(true);
+    expect(tile(5).style.top).toBe(tile(0).style.top);
   });
 
-  it('opens Inputs on the current input, steps through it and closes on Back', () => {
-    const inputsBtn = document.getElementById('dock-inputs-btn');
-    inputsBtn.focus();
-    inputsBtn.click();
+  it('shows the time on the clock and the date in its menu', () => {
+    dock.setClock({time: '9:41', ampm: 'PM'}, 'Wednesday 21 October');
+    expect(document.getElementById('dock-menu-time').textContent).toBe('9:41PM');
+    expect(document.getElementById('dock-menu-date').textContent).toBe('Wednesday 21 October');
+  });
+
+  it('goes up from the dock to the clock and back down to the same tile', () => {
+    const clock = document.getElementById('dock-menu-btn');
+    tile(1).focus();
+    expect(dock.handleArrow(REMOTE_KEY.UP, tile(1))).toBe(true);
+    expect(document.activeElement).toBe(clock);
+    // Nothing beside the clock.
+    expect(dock.handleArrow(REMOTE_KEY.LEFT, clock)).toBe(true);
+    expect(dock.handleArrow(REMOTE_KEY.RIGHT, clock)).toBe(true);
+    expect(dock.handleArrow(REMOTE_KEY.DOWN, clock)).toBe(true);
+    expect(document.activeElement).toBe(tile(1));
+    // Grid rows are focus.js's own.
+    expect(dock.handleArrow(REMOTE_KEY.UP, tile(4))).toBe(false);
+  });
+
+  it('opens the menu on the current input, with the inputs inside it', () => {
+    const clock = document.getElementById('dock-menu-btn');
+    expect(elements.inputRow.parentNode.id).toBe('dock-menu-inputs');
+    clock.focus();
+    clock.click();
     const chips = elements.inputRow.querySelectorAll('.input-chip');
-    expect(dock.isInputsOpen()).toBe(true);
+    expect(dock.isMenuOpen()).toBe(true);
     expect(document.activeElement).toBe(chips[1]);
-    expect(dock.handleArrow(REMOTE_KEY.UP, chips[1])).toBe(true);
-    expect(document.activeElement).toBe(chips[0]);
+    dock.handleArrow(REMOTE_KEY.DOWN, chips[1]);
+    expect(document.activeElement.id).toBe('dock-menu-settings');
+    dock.handleArrow(REMOTE_KEY.DOWN, document.activeElement);
+    expect(document.activeElement.id).toBe('dock-menu-tv');
     expect(dock.handleBack()).toBe(true);
-    expect(dock.isInputsOpen()).toBe(false);
-    expect(document.activeElement).toBe(inputsBtn);
+    expect(dock.isMenuOpen()).toBe(false);
+    expect(document.activeElement).toBe(clock);
     expect(dock.handleBack()).toBe(false);
   });
 
-  it('keeps the pills from wrapping into the grid', () => {
-    const inputsBtn = document.getElementById('dock-inputs-btn');
-    expect(dock.handleArrow(REMOTE_KEY.LEFT, inputsBtn)).toBe(true);
-    expect(dock.handleArrow(REMOTE_KEY.RIGHT, elements.appSettingsBtn)).toBe(true);
+  it('opens Settings and TV Settings from the menu', () => {
+    document.getElementById('dock-menu-btn').click();
+    document.getElementById('dock-menu-settings').click();
+    expect(onOpenSettings).toHaveBeenCalled();
+    expect(dock.isMenuOpen()).toBe(false);
+    document.getElementById('dock-menu-btn').click();
+    document.getElementById('dock-menu-tv').click();
+    expect(onOpenTvSettings).toHaveBeenCalled();
   });
 
-  it('takes everything off for Classic', () => {
-    const tiles = elements.appGrid.querySelectorAll('.app-tile');
+  it('takes everything off for Classic, inputs back in place', () => {
     dock.apply({launcher: {homeStyle: 'classic'}});
     expect(document.body.classList.contains('home-dock')).toBe(false);
-    expect(tiles[4].style.top).toBe('');
-    expect(dock.handleArrow(REMOTE_KEY.UP, tiles[0])).toBe(false);
+    expect(tile(4).style.top).toBe('');
+    expect(elements.inputRow.parentNode).toBe(classicParent);
+    expect(dock.handleArrow(REMOTE_KEY.UP, tile(0))).toBe(false);
   });
 });
