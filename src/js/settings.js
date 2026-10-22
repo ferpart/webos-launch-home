@@ -2058,7 +2058,7 @@ export function createSettingsPanel(panel, getConfig, options) {
     const homeStyleHint = document.createElement('p');
     homeStyleHint.className = 'settings-hint';
     homeStyleHint.textContent = 'Dock: the first row of apps in a dock with the rest in a grid below, ' +
-      'a glow in the colour of the app you are on, and a clock top left that opens your inputs, these ' +
+      'a glow in the colour of the app you are on, and a clock top right that opens your inputs, these ' +
       'settings and TV Settings. Classic: the original row of glass tiles with weather and the volume ' +
       'bar. Wallpaper, apps and inputs are shared; the Glass, icon size and layout settings apply to Classic.';
     homeStyleSection.appendChild(homeStyleHint);

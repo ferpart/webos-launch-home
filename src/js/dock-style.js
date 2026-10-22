@@ -9,7 +9,7 @@ import {APP_VERSION} from './version.js';
  * The Dock home style (Settings -> Look -> Home style), after webos-vibehack's
  * Apple TV-style launcher: the first row of tiles in a dock with the focused
  * app's name above it, the rest in a grid below, a glow in the focused app's
- * colour and one glass highlight that springs between tiles. Top left, a clock
+ * colour and one glass highlight that springs between tiles. Top right, a clock
  * that opens a menu: the inputs, Launch Home's Settings and TV Settings.
  *
  * Presentation only. The tiles and inputs are Launch Home's own (apps.js,

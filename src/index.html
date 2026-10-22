@@ -23,12 +23,14 @@
     <div id="dock-hero" class="dock-hero" aria-hidden="true"></div>
 
     <header class="top-bar">
-      <!-- Dock home style (dock-style.js): the clock, which opens a menu of the
-           inputs, Settings and TV Settings. -->
+      <!-- Dock home style (dock-style.js): the clock, top right as on an Apple
+           TV, which opens a menu of the inputs, Settings and TV Settings. -->
       <button id="dock-menu-btn" class="dock-menu-btn focusable" type="button" data-focus-index="85"
         aria-haspopup="true" aria-expanded="false" aria-label="Inputs and settings">
         <span id="dock-menu-time" class="dock-menu-time"></span>
-        <svg class="dock-menu-chevron" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <span class="dock-menu-badge" aria-hidden="true">
+          <svg viewBox="0 0 24 24"><path d="M4 7h9M17 7h3M4 12h3M11 12h9M4 17h11M19 17h1" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/><circle cx="15" cy="7" r="2" fill="none" stroke="currentColor" stroke-width="2.4"/><circle cx="9" cy="12" r="2" fill="none" stroke="currentColor" stroke-width="2.4"/><circle cx="17" cy="17" r="2" fill="none" stroke="currentColor" stroke-width="2.4"/></svg>
+        </span>
       </button>
       <div id="dock-menu" class="dock-menu" role="menu">
         <div id="dock-menu-date" class="dock-menu-date"></div>
