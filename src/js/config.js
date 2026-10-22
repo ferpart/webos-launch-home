@@ -7,7 +7,7 @@ const STORAGE_KEY = 'lounge.config.v1';
 // means, its type or its name? Bump this and add a step to migrateConfig():
 // stored settings and restored backups from older versions both go through
 // those steps (see configFromBackup).
-export const CONFIG_SCHEMA_VERSION = 26;
+export const CONFIG_SCHEMA_VERSION = 27;
 
 export const DEFAULT_CONFIG = {
   version: CONFIG_SCHEMA_VERSION,
@@ -100,9 +100,9 @@ export const DEFAULT_CONFIG = {
     dockColumns: 4,
     // Dock: the dock row shows the 'recent'ly opened apps, or the 'pinned' order.
     dockOrder: 'recent',
-    // Dock: glow in the focused app's colour, 'soft' (behind the dock),
-    // 'full' (webos-vibehack's, over the whole screen) or 'off'.
-    dockGlow: 'soft',
+    // Dock: glow in the focused app's colour, 'off', 'soft' (behind the
+    // dock) or 'full' (webos-vibehack's, over the whole screen).
+    dockGlow: 'off',
     // All apps tile on the home row (opens the grid of every app on the TV).
     allAppsTile: true,
     // Remote number keys (1-9) open the home row tile at that position, with
@@ -473,6 +473,13 @@ function migrateConfig(config) {
     if (!config.background) config.background = {};
     if (typeof config.background.dimming !== 'number') config.background.dimming = 0;
     config.version = 26;
+  }
+
+  // v27: the Dock's glow is off by default. 'soft' was the default before
+  // (stored by any Save), and tinted the dock in the focused app's colour.
+  if ((config.version || 1) < 27) {
+    if (config.launcher.dockGlow === 'soft') config.launcher.dockGlow = 'off';
+    config.version = 27;
   }
 
   return config;

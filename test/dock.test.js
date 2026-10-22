@@ -101,11 +101,21 @@ describe('dock layout', () => {
 });
 
 describe('dock glow', () => {
-  it('is soft unless full or off was chosen', () => {
-    expect(dockGlowOf({launcher: {}})).toBe('soft');
+  it('is off unless soft or full was chosen', () => {
+    expect(dockGlowOf({launcher: {}})).toBe('off');
     expect(dockGlowOf({launcher: {dockGlow: 'full'}})).toBe('full');
-    expect(dockGlowOf({launcher: {dockGlow: 'off'}})).toBe('off');
-    expect(dockGlowOf({launcher: {dockGlow: 'x'}})).toBe('soft');
+    expect(dockGlowOf({launcher: {dockGlow: 'soft'}})).toBe('soft');
+    expect(dockGlowOf({launcher: {dockGlow: 'x'}})).toBe('off');
+    expect(DEFAULT_CONFIG.launcher.dockGlow).toBe('off');
+  });
+
+  it('turns the old soft default off in saved settings, keeping full', () => {
+    const saved = JSON.parse(JSON.stringify(DEFAULT_CONFIG));
+    saved.version = 26;
+    saved.launcher.dockGlow = 'soft';
+    expect(configFromBackup(saved, DEFAULT_CONFIG).config.launcher.dockGlow).toBe('off');
+    saved.launcher.dockGlow = 'full';
+    expect(configFromBackup(saved, DEFAULT_CONFIG).config.launcher.dockGlow).toBe('full');
   });
 
   it('keeps the soft glow low and faint', async () => {

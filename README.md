@@ -9,7 +9,7 @@ A fork of [gprot42/webos-launch-home](https://github.com/gprot42/webos-launch-ho
 - **A dock and a grid.** The top row sits on a translucent shelf with the focused app's name above it; the rest of your apps are in a grid below that scrolls smoothly. 3 to 6 apps per row.
 - **Recently used.** The dock can show the apps you opened last (from a tile, by voice, or any other way), or keep your pinned order.
 - **Apple TV-style tiles.** Wide 16:9 art for common apps, made from each app's own webOS launch art; other apps get their icon on a blurred bleed of itself. The focused tile lifts with a soft shadow, a sheen, and a slight tilt that follows the Magic Remote's pointer; one glass highlight springs between tiles.
-- **A glow in the app's colour**, soft behind the dock (or full screen, or off).
+- **An optional glow in the app's colour**: off by default, or soft behind the dock, or webos-vibehack's full screen.
 - **A clock, top right**, that opens a frosted menu with your inputs, Launch Home settings and TV Settings.
 - **Your wallpaper underneath**, including Apple's aerial videos.
 - The Outfit typeface, and nothing that blurs over the video except the menu while it's open. Works on webOS 6 (Chromium 79).

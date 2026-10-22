@@ -93,10 +93,10 @@ export function noteRecentApp(id) {
   }
 }
 
-/** The glow in the focused app's colour: 'soft' (default), 'full' or 'off'. */
+/** The glow in the focused app's colour: 'off' (default), 'soft' or 'full'. */
 export function dockGlowOf(config) {
   const glow = config && config.launcher && config.launcher.dockGlow;
-  return glow === 'full' || glow === 'off' ? glow : 'soft';
+  return glow === 'full' || glow === 'soft' ? glow : 'off';
 }
 
 /** Tiles per row in `config` (3-6, default 4). */
@@ -187,7 +187,7 @@ export function createDockStyle(opts) {
   let ambientKey = '';
   let menuOpen = false;
   let dockOrder = 'recent';
-  let glow = 'soft';
+  let glow = 'off';
   // The tiles in the order shown. Worked out when the home screen appears or
   // its tiles change, never while the remote is moving through them.
   let ordered = [];

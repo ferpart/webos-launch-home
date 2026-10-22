@@ -2061,10 +2061,10 @@ export function createSettingsPanel(panel, getConfig, options) {
     ], config.launcher.dockOrder === 'pinned' ? 'pinned' : 'recent');
     homeStyleSection.appendChild(labeledControl('Dock: top row shows', dockOrderSelect));
     const dockGlowSelect = createOptionStepper('', 899, [
+      {value: 'off', label: 'Off'},
       {value: 'soft', label: 'Soft, behind the dock'},
-      {value: 'full', label: 'Full screen'},
-      {value: 'off', label: 'Off'}
-    ], ['full', 'off'].indexOf(config.launcher.dockGlow) >= 0 ? config.launcher.dockGlow : 'soft');
+      {value: 'full', label: 'Full screen'}
+    ], ['full', 'soft'].indexOf(config.launcher.dockGlow) >= 0 ? config.launcher.dockGlow : 'off');
     homeStyleSection.appendChild(labeledControl('Dock: glow in the app\u2019s colour', dockGlowSelect));
     const homeStyleHint = document.createElement('p');
     homeStyleHint.className = 'settings-hint';
@@ -4192,9 +4192,9 @@ export function createSettingsPanel(panel, getConfig, options) {
       config.launcher.homeStyle = homeStyleSelect.value === 'classic' ? 'classic' : 'dock';
       config.launcher.dockColumns = parseInt(dockColumnsSelect.value, 10) || 4;
       config.launcher.dockOrder = dockOrderSelect.value === 'pinned' ? 'pinned' : 'recent';
-      config.launcher.dockGlow = ['full', 'off'].indexOf(dockGlowSelect.value) >= 0
+      config.launcher.dockGlow = ['full', 'soft'].indexOf(dockGlowSelect.value) >= 0
         ? dockGlowSelect.value
-        : 'soft';
+        : 'off';
       config.launcher.glassTint = glassSelect.value || 'light';
       config.launcher.glassBorder = glassBorderSelect.value || 'white';
       config.launcher.focusColour = focusColourSelect.value || 'warm';
