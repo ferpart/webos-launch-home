@@ -1288,6 +1288,12 @@ export function createFocusManager(root, handlers) {
       }
       event.preventDefault();
       const from = document.activeElement;
+      // A home style that lays the screen out its own way steers some moves
+      // itself (dock-style.js); otherwise the spatial search below.
+      if (handlers && handlers.onArrow && handlers.onArrow(code, from)) {
+        lastMove = null;
+        return;
+      }
       moveDirection(code);
       // Remember home screen moves, so the opposite key can go straight back.
       const to = document.activeElement;
