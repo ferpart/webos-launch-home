@@ -10,7 +10,7 @@
  * OLED burn-in protection and makes the system saver less likely to steal focus.
  */
 
-import {setClockTime} from './clock-format.js';
+import {setClockTime, clockTimeZone} from './clock-format.js';
 import {MEDIA_VIDEO, normalizeBackgroundConfig, resolveBackgroundMedia} from './backgrounds.js';
 import {resolveLoungePaths} from './usb.js';
 
@@ -120,7 +120,7 @@ export function createCustomScreensaver(options) {
         : 20,
       showClock: launcher.customScreensaverShowClock !== false,
       showDate: launcher.customScreensaverShowDate !== false,
-      timezone: launcher.timezone || ''
+      timezone: clockTimeZone(launcher)
     };
   }
 

@@ -4,6 +4,23 @@
  * format). `timezone` is Settings -> Look -> Timezone ('' = the TV's own).
  */
 
+/**
+ * The time zone clocks show: Settings -> Look -> Timezone, else the TV's own.
+ * Some TVs keep the system clock on GMT and only the TV's settings know the
+ * zone (America/Mexico_City on a webOS 6 OLED), so the browser's local time
+ * was hours off; webOS hands web apps that zone as PalmSystem.timeZone.
+ */
+export function clockTimeZone(launcher) {
+  if (launcher && launcher.timezone) return launcher.timezone;
+  try {
+    const system = (typeof window !== 'undefined') && (window.webOSSystem || window.PalmSystem);
+    const zone = system && system.timeZone;
+    return typeof zone === 'string' ? zone : '';
+  } catch (err) {
+    return '';
+  }
+}
+
 function pad(n) {
   return String(n).padStart(2, '0');
 }

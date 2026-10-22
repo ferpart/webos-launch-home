@@ -1,4 +1,4 @@
-import {setClockTime, clockParts} from './clock-format.js';
+import {setClockTime, clockParts, clockTimeZone} from './clock-format.js';
 import {createAllApps} from './all-apps.js';
 import './compat.js';
 import {loadConfig, saveConfig, applyUsbConfig, readStoredConfigText} from './config.js';
@@ -626,21 +626,21 @@ function updateClock() {
   const config = getConfig();
   const launcher = config.launcher || {};
   const now = new Date();
+  const zone = clockTimeZone(launcher);
 
   applyClockStyle();
   // The Dock's clock is its menu button, so it shows the time either way.
-  dock.setClock(clockParts(now, launcher.timezone || '', launcher.clockFormat === '12'),
-    formatClockDate(now, launcher.timezone || ''));
+  dock.setClock(clockParts(now, zone, launcher.clockFormat === '12'), formatClockDate(now, zone));
 
   if (launcher.showClock) {
-    setClockTime(elements.clock, now, launcher.timezone || '', launcher.clockFormat === '12');
+    setClockTime(elements.clock, now, zone, launcher.clockFormat === '12');
   } else {
     elements.clock.textContent = '';
   }
 
   if (elements.clockDate) {
     if (launcher.showDate) {
-      elements.clockDate.textContent = formatClockDate(now, launcher.timezone || '');
+      elements.clockDate.textContent = formatClockDate(now, zone);
     } else {
       elements.clockDate.textContent = '';
     }
