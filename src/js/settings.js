@@ -2068,11 +2068,11 @@ export function createSettingsPanel(panel, getConfig, options) {
     homeStyleSection.appendChild(labeledControl('Dock: glow in the app\u2019s colour', dockGlowSelect));
     const homeStyleHint = document.createElement('p');
     homeStyleHint.className = 'settings-hint';
-    homeStyleHint.textContent = 'Dock: the first row of apps in a dock with the rest in a grid below, ' +
-      'a glow in the colour of the app you are on, and a clock top right that opens your inputs, these ' +
-      'settings and TV Settings. The top row can follow the apps you opened last. Classic: the original ' +
-      'row of glass tiles with weather and the volume ' +
-      'bar. Wallpaper, apps and inputs are shared; the Glass, icon size and layout settings apply to Classic.';
+    homeStyleHint.textContent = 'Dock: an Apple TV-style home screen. The top row of apps is a dock, and ' +
+      'the other apps are in a grid below it. The clock at the top right opens your inputs, these ' +
+      'settings and TV Settings. Classic: the original row of glass tiles, with weather and the volume ' +
+      'bar. Both styles use the same wallpaper, apps and inputs. The Glass, icon size and layout ' +
+      'settings apply only to Classic.';
     homeStyleSection.appendChild(homeStyleHint);
     panes.look.appendChild(homeStyleSection);
 
