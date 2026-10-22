@@ -1,4 +1,4 @@
-import {setClockTime} from './clock-format.js';
+import {setClockTime, clockParts} from './clock-format.js';
 import {createAllApps} from './all-apps.js';
 import './compat.js';
 import {loadConfig, saveConfig, applyUsbConfig, readStoredConfigText} from './config.js';
@@ -11,6 +11,7 @@ import {createInputRow} from './inputs.js';
 import {createChannelStrip} from './channels.js';
 import {createFocusManager} from './focus.js';
 import {createSettingsPanel} from './settings.js';
+import {createDockStyle} from './dock-style.js';
 import {
   getForegroundApp,
   launchApp,
@@ -400,6 +401,9 @@ function stepAerialBackground(direction) {
 }
 
 const focus = createFocusManager(document.getElementById('app'), {
+  onArrow: function (code, active) {
+    return dock.handleArrow(code, active);
+  },
   onNumber: function (n) {
     // While the screensaver is showing, a key press dismisses it (screensaver.js)
     // rather than opening an app behind it.
@@ -410,6 +414,7 @@ const focus = createFocusManager(document.getElementById('app'), {
     apps.launchByNumber(n);
   },
   onBack: function () {
+    if (dock.handleBack()) return;
     if (allApps.isOpen()) {
       allApps.hide();
       return;
@@ -461,6 +466,19 @@ const focus = createFocusManager(document.getElementById('app'), {
   }
 });
 
+// Dock home style (Settings -> Look -> Home style): the same tiles, inputs
+// and Settings button, laid out like webos-vibehack's Apple TV-style home.
+const dock = createDockStyle({
+  elements: Object.assign({app: document.getElementById('app')}, elements),
+  focusElement: function (el) {
+    return focus.focusElement(el);
+  },
+  onOpenNetworkSettings: function () {
+    openTvSettings({target: 'network'});
+  },
+  onToast: showToast
+});
+
 // All apps: the grid of every app on the TV, from the All apps tile.
 const allApps = createAllApps({
   mount: document.getElementById('app'),
@@ -478,7 +496,7 @@ const allApps = createAllApps({
 // is already opening just brings it forward.
 const SYSTEM_APP_ROOT_AFTER_MS = 1200;
 
-function launchSystemApp(id) {
+function launchSystemApp(id, params) {
   return new Promise(function (resolve, reject) {
     let settled = false;
     let failures = 0;
@@ -500,10 +518,10 @@ function launchSystemApp(id) {
     function startRoot() {
       if (rootStarted || settled) return;
       rootStarted = true;
-      launchAppViaRoot(id).then(succeed, failOne);
+      launchAppViaRoot(id, params).then(succeed, failOne);
     }
     rootTimer = setTimeout(startRoot, SYSTEM_APP_ROOT_AFTER_MS);
-    launchApp(id).then(succeed, function () {
+    launchApp(id, params).then(succeed, function () {
       clearTimeout(rootTimer);
       failOne();
       startRoot();
@@ -511,7 +529,8 @@ function launchSystemApp(id) {
   });
 }
 
-async function openTvSettings() {
+/** @param {object} [params] e.g. {target: 'network'} for its network page */
+async function openTvSettings(params) {
   // TV Settings opens as a panel over Launch Home, which stays on screen
   // underneath: pause its animations now rather than waiting for a blur event
   // (older webOS may not send one). Any key back in Launch Home clears it.
@@ -524,7 +543,7 @@ async function openTvSettings() {
   const ids = getAppIdCandidates('com.webos.app.settings');
   for (let i = 0; i < ids.length; i += 1) {
     try {
-      await launchSystemApp(ids[i]);
+      await launchSystemApp(ids[i], params);
       return;
     } catch (err) {
       // Try the next candidate id.
@@ -607,6 +626,7 @@ function updateClock() {
   const now = new Date();
 
   applyClockStyle();
+  dock.setGreeting(Number(clockParts(now, launcher.timezone || '', false).time.split(':')[0]));
 
   if (launcher.showClock) {
     setClockTime(elements.clock, now, launcher.timezone || '', launcher.clockFormat === '12');
@@ -825,6 +845,7 @@ async function refreshAll(opts) {
   applyIconAlign();
   applyPerfMode();
   applyGlassTint();
+  dock.apply(getConfig());
   music.applyConfig();
   // Paints the cached forecast at once; the network fetch (if stale) is not awaited.
   weather.refresh();

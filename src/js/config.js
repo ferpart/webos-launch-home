@@ -93,6 +93,9 @@ export const DEFAULT_CONFIG = {
     // (the original), white, border (same as glassBorder), blue, purple,
     // green or gold.
     focusColour: 'warm',
+    // Home screen layout: 'dock' (the Apple TV-style dock and grid,
+    // dock-style.js) or 'classic' (the original row of glass tiles).
+    homeStyle: 'dock',
     // All apps tile on the home row (opens the grid of every app on the TV).
     allAppsTile: true,
     // Remote number keys (1-9) open the home row tile at that position, with

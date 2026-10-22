@@ -2042,6 +2042,24 @@ export function createSettingsPanel(panel, getConfig, options) {
       });
     }
 
+    // Home style: the Apple TV-style dock (dock-style.js) or the original row.
+    const homeStyleSection = document.createElement('section');
+    homeStyleSection.className = 'settings-section';
+    homeStyleSection.innerHTML = '<h3>Home style</h3>';
+    const homeStyleSelect = createOptionStepper('', 899, [
+      {value: 'dock', label: 'Dock (Apple TV style)'},
+      {value: 'classic', label: 'Classic (original)'}
+    ], config.launcher.homeStyle === 'classic' ? 'classic' : 'dock');
+    homeStyleSection.appendChild(labeledControl('Layout', homeStyleSelect));
+    const homeStyleHint = document.createElement('p');
+    homeStyleHint.className = 'settings-hint';
+    homeStyleHint.textContent = 'Dock: four apps in a dock with the rest in a grid below, a glow in the ' +
+      'colour of the app you are on, and Inputs, Wi-Fi and Settings at the top. Classic: the original ' +
+      'row of glass tiles with weather and the volume bar. Wallpaper, apps and inputs are shared; the ' +
+      'Glass, icon size and layout settings apply to Classic.';
+    homeStyleSection.appendChild(homeStyleHint);
+    panes.look.appendChild(homeStyleSection);
+
     const profileSection = document.createElement('section');
     profileSection.className = 'settings-section';
     profileSection.innerHTML = '<h3>Profile</h3>';
@@ -4155,6 +4173,7 @@ export function createSettingsPanel(panel, getConfig, options) {
       config.launcher.perfMode = perfModeToggle.checked;
       config.launcher.allAppsTile = allAppsTileToggle.checked;
       config.launcher.numberKeyLaunch = numberKeyToggle.checked;
+      config.launcher.homeStyle = homeStyleSelect.value === 'classic' ? 'classic' : 'dock';
       config.launcher.glassTint = glassSelect.value || 'light';
       config.launcher.glassBorder = glassBorderSelect.value || 'white';
       config.launcher.focusColour = focusColourSelect.value || 'warm';
