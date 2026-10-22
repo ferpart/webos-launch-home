@@ -6,6 +6,8 @@ This project is a fork of [Launch Home](https://github.com/gprot42/webos-launch-
 
 ![The home screen on an LG OLED C1 with webOS 6](docs/screenshots/home.jpg)
 
+All the Apple TV-style screenshots come from an LG OLED C1 with webOS 6.
+
 ## What it looks like
 
 The top row of apps is a dock, as on an Apple TV. The name of the app that you select shows in large type above the dock. Your other apps are in a grid below the dock.
