@@ -99,10 +99,10 @@ function lunaSubscribeOnce(uri, options) {
   });
 }
 
-export function launchApp(id, params) {
+export function launchApp(id) {
   return withTimeout(lunaRequest('luna://com.webos.applicationManager', {
     method: 'launch',
-    parameters: {id: id, params: params || {}}
+    parameters: {id: id, params: {}}
   }), 5000);
 }
 
@@ -354,10 +354,10 @@ function getForegroundViaRoot() {
  * Launch an app via root luna-send. More reliable from backgrounded contexts
  * where the sandboxed applicationManager/launch call may be denied or ignored.
  */
-export function launchAppViaRoot(id, params) {
+export function launchAppViaRoot(id) {
   const command = lunaSendRootCommand(
     'luna://com.webos.applicationManager/launch',
-    JSON.stringify(params ? {id: id, params: params} : {id: id}),
+    JSON.stringify({id: id}),
     4000
   );
   return withTimeout(execRoot(command), 5000).then(function (res) {
