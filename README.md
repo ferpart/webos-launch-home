@@ -1,4 +1,35 @@
-# webOS Launch Home
+# webOS Launch Home — Dock mod
+
+A fork of [gprot42/webos-launch-home](https://github.com/gprot42/webos-launch-home) that adds an Apple TV-style **Dock** home style, after [OmkarK97/webos-vibehack](https://github.com/OmkarK97/webos-vibehack) (itself a webOS port of [Gathin23/tv-vibehack](https://github.com/Gathin23/tv-vibehack)). Everything else is Launch Home: same app id, Home-button watcher, boot on start, Homebrew Channel integration, app launching, input switching, settings and backups.
+
+![The Dock home style on an LG OLED C1 (webOS 6)](docs/screenshots/dock.jpg)
+
+### What the Dock style adds
+
+- **A dock and a grid.** The top row sits on a translucent shelf with the focused app's name above it; the rest of your apps are in a grid below that scrolls smoothly. 3 to 6 apps per row.
+- **Recently used.** The dock can show the apps you opened last (from a tile, by voice, or any other way), or keep your pinned order.
+- **Apple TV-style tiles.** Wide 16:9 art for common apps, made from each app's own webOS launch art; other apps get their icon on a blurred bleed of itself. The focused tile lifts with a soft shadow, a sheen, and a slight tilt that follows the Magic Remote's pointer; one glass highlight springs between tiles.
+- **A glow in the app's colour**, soft behind the dock (or full screen, or off).
+- **A clock, top right**, that opens a frosted menu with your inputs, Launch Home settings and TV Settings.
+- **Your wallpaper underneath**, including Apple's aerial videos.
+- The Outfit typeface, and nothing that blurs over the video except the menu while it's open. Works on webOS 6 (Chromium 79).
+
+Switch in **Settings → Look → Home style** (Dock or Classic). Classic is the original Launch Home, unchanged; the Dock's own options (apps per row, top row, glow) are in the same section. The clock also uses the TV's own time zone when none is chosen in Look → Timezone, for TVs whose system clock runs on GMT.
+
+Install as below (`npm install && npm run pack`, then install the IPK). Your Launch Home settings carry over.
+
+### Credits
+
+- [Launch Home](https://github.com/gprot42/webos-launch-home) by gprot42 and contributors: the app this is built on.
+- [webos-vibehack](https://github.com/OmkarK97/webos-vibehack) by OmkarK97, and [tv-vibehack](https://github.com/Gathin23/tv-vibehack) by Gathin: the dock and grid layout, glass highlight, glow and colour sampling ported here.
+- [Glasshouse](https://github.com/rorygallagher2024/glasshouse) by Rory Gallagher: its logo, for its tile.
+- [Outfit](https://github.com/Outfitio/Outfit-Fonts) typeface, SIL Open Font License 1.1.
+
+See [THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md) for their licences. App names, logos and banner art are trademarks of their owners and are used only to label their apps.
+
+---
+
+## Launch Home
 
 A fullscreen home screen for rooted LG webOS TVs. Pick an app, switch inputs, and enjoy ambient background music — without the stock launcher clutter.
 
