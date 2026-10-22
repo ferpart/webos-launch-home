@@ -626,7 +626,10 @@ function updateClock() {
   const now = new Date();
 
   applyClockStyle();
-  dock.setGreeting(Number(clockParts(now, launcher.timezone || '', false).time.split(':')[0]));
+  // The greeting heads the clock: none when the clock is off.
+  dock.setGreeting(launcher.showClock
+    ? Number(clockParts(now, launcher.timezone || '', false).time.split(':')[0])
+    : null);
 
   if (launcher.showClock) {
     setClockTime(elements.clock, now, launcher.timezone || '', launcher.clockFormat === '12');

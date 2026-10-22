@@ -164,6 +164,13 @@ describe('dock remote handling', () => {
     focusElement.mockClear();
   });
 
+  it('greets only while there is a clock to head', () => {
+    dock.setGreeting(9);
+    expect(document.getElementById('dock-greeting').textContent).toBe('Good morning');
+    dock.setGreeting(null);
+    expect(document.getElementById('dock-greeting').textContent).toBe('');
+  });
+
   it('lays the tiles out and shows the focused dock app\'s name', () => {
     const tiles = elements.appGrid.querySelectorAll('.app-tile');
     expect(document.body.classList.contains('home-dock')).toBe(true);

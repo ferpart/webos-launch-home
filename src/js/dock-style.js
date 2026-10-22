@@ -667,9 +667,9 @@ export function createDockStyle(opts) {
     isInputsOpen: function () { return inputsOpen; },
     handleArrow: handleArrow,
     handleBack: handleBack,
-    /** The line above the clock, for the hour (0-23) it shows. */
+    /** The line above the clock, for the hour (0-23) it shows; null: none. */
     setGreeting: function (hour) {
-      if (greeting) greeting.textContent = greetingFor(hour);
+      if (greeting) greeting.textContent = hour === null ? '' : greetingFor(hour);
     }
   };
 }
