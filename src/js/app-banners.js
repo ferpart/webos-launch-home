@@ -4,7 +4,7 @@ import {getAppIdCandidates} from './app-icons.js';
  * Wide 16:9 tile art for the Dock home style (dock-style.js), like the tiles
  * on an Apple TV. Made from each app's own launch art as installed on webOS
  * (its splash screen, or its logo on its brand colour), 720x404: twice the
- * tile. Apps without one get their icon on a blurred bleed of itself.
+ * four-across tile. Apps without one get their icon on a blurred bleed of itself.
  */
 const BANNERS = {
   'netflix': 'netflix.jpg',
@@ -15,7 +15,9 @@ const BANNERS = {
   'com.wbd.stream': 'max.jpg',
   'com.hbo.hbomax': 'max.jpg',
   'com.disney.alch.prod.lrd.app': 'star-plus.jpg',
-  'org.webosbrew.hbchannel': 'homebrew.jpg'
+  'org.webosbrew.hbchannel': 'homebrew.jpg',
+  // Glasshouse (github.com/rorygallagher2024/glasshouse): from its vector logo.
+  'com.tvweb.dashboard': 'glasshouse.jpg'
 };
 
 /** The banner's packaged path for app `id` (any of its ids), or ''. */
