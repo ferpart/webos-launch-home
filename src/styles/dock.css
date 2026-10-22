@@ -172,8 +172,11 @@ body.home-dock.dock-menu-open .dock-menu {
   min-width: 480px;
   padding: 16px;
   border-radius: 40px;
-  border: 2px solid rgba(255, 255, 255, 0.2);
-  background: linear-gradient(180deg, #2a2a2e, #161618);
+  border: 2px solid rgba(255, 255, 255, 0.18);
+  /* Frosted glass: only while open, so the blur over the video is brief. */
+  background: linear-gradient(180deg, rgba(70, 70, 78, 0.5), rgba(34, 34, 40, 0.58));
+  -webkit-backdrop-filter: blur(40px) saturate(1.8);
+  backdrop-filter: blur(40px) saturate(1.8);
   box-shadow: 0 30px 70px rgba(0, 0, 0, 0.5);
   transform-origin: top right;
   animation: dock-drop 220ms cubic-bezier(0.2, 0.8, 0.3, 1);
@@ -587,6 +590,12 @@ body.home-dock .channel-chip.focused {
 }
 
 /* ---- Performance mode: no springs or glow fades ---------------------------- */
+
+body.home-dock.perf-mode .dock-menu {
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+  background: linear-gradient(180deg, #2a2a2e, #161618);
+}
 
 body.home-dock.perf-mode #app-grid > .app-tile,
 body.home-dock.perf-mode .dock-glass,
