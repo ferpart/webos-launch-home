@@ -100,6 +100,9 @@ export const DEFAULT_CONFIG = {
     dockColumns: 4,
     // Dock: the dock row shows the 'recent'ly opened apps, or the 'pinned' order.
     dockOrder: 'recent',
+    // Dock: glow in the focused app's colour, 'soft' (behind the dock),
+    // 'full' (webos-vibehack's, over the whole screen) or 'off'.
+    dockGlow: 'soft',
     // All apps tile on the home row (opens the grid of every app on the TV).
     allAppsTile: true,
     // Remote number keys (1-9) open the home row tile at that position, with

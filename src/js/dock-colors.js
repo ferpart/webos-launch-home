@@ -78,9 +78,18 @@ export function vividColor(px) {
   return hsvToRgb(h);
 }
 
-/** The ambient glow layer's background for colour [r, g, b]. */
-export function glowGradient(color) {
+/**
+ * The ambient glow layer's background for colour [r, g, b]: 'full' is
+ * webos-vibehack's wash over the whole screen (made for a black page);
+ * 'soft' a fainter one along the bottom, behind the dock, that leaves the
+ * wallpaper its own colours.
+ */
+export function glowGradient(color, strength) {
   const key = color.join(',');
+  if (strength === 'soft') {
+    return 'radial-gradient(ellipse 1300px 560px at 30% 100%, rgba(' + key + ',0.24) 0%, rgba(' +
+      key + ',0.08) 55%, rgba(' + key + ',0) 100%)';
+  }
   return 'radial-gradient(circle 1190px at 32% 42%, rgba(' + key + ',0.36) 0%, rgba(' +
     key + ',0.15) 50%, rgba(' + key + ',0) 100%)';
 }

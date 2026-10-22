@@ -93,6 +93,12 @@ export function noteRecentApp(id) {
   }
 }
 
+/** The glow in the focused app's colour: 'soft' (default), 'full' or 'off'. */
+export function dockGlowOf(config) {
+  const glow = config && config.launcher && config.launcher.dockGlow;
+  return glow === 'full' || glow === 'off' ? glow : 'soft';
+}
+
 /** Tiles per row in `config` (3-6, default 4). */
 export function dockColumnsOf(config) {
   const n = Number(config && config.launcher && config.launcher.dockColumns);
@@ -181,6 +187,7 @@ export function createDockStyle(opts) {
   let ambientKey = '';
   let menuOpen = false;
   let dockOrder = 'recent';
+  let glow = 'soft';
   // The tiles in the order shown. Worked out when the home screen appears or
   // its tiles change, never while the remote is moving through them.
   let ordered = [];
@@ -421,7 +428,7 @@ export function createDockStyle(opts) {
     if (key === ambientKey) return;
     ambientKey = key;
     const back = ambients[1 - ambientFront];
-    back.style.background = glowGradient(color);
+    back.style.background = glowGradient(color, glow);
     back.style.opacity = '1';
     ambients[ambientFront].style.opacity = '0';
     ambientFront = 1 - ambientFront;
@@ -658,6 +665,13 @@ export function createDockStyle(opts) {
     const want = homeStyleOf(config) === 'dock';
     const columns = dockColumnsOf(config);
     dockOrder = dockOrderOf(config);
+    const nextGlow = dockGlowOf(config);
+    if (nextGlow !== glow) {
+      glow = nextGlow;
+      ambientKey = '';
+      ambients.forEach(function (layer) { layer.style.opacity = '0'; });
+    }
+    document.body.classList.toggle('dock-no-glow', glow === 'off');
     if (columns !== geo.columns) {
       geo = dockGeometry(columns);
       offset = 0;

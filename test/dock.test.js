@@ -4,6 +4,7 @@ import {
   createDockStyle,
   dockColumnsOf,
   dockGeometry,
+  dockGlowOf,
   dockScrollOffset,
   dockTileLeft,
   dockTileTop,
@@ -96,6 +97,22 @@ describe('dock layout', () => {
     // Back up a row: stays while it is still on screen, else only as far as it needs.
     expect(dockScrollOffset(5, 540, four)).toBe(540);
     expect(dockScrollOffset(5, 1000, four)).toBe(1036 - 24 - 80);
+  });
+});
+
+describe('dock glow', () => {
+  it('is soft unless full or off was chosen', () => {
+    expect(dockGlowOf({launcher: {}})).toBe('soft');
+    expect(dockGlowOf({launcher: {dockGlow: 'full'}})).toBe('full');
+    expect(dockGlowOf({launcher: {dockGlow: 'off'}})).toBe('off');
+    expect(dockGlowOf({launcher: {dockGlow: 'x'}})).toBe('soft');
+  });
+
+  it('keeps the soft glow low and faint', async () => {
+    const {glowGradient} = await import('../src/js/dock-colors.js');
+    expect(glowGradient([229, 9, 20], 'soft')).toContain('at 30% 100%');
+    expect(glowGradient([229, 9, 20], 'soft')).toContain('0.24');
+    expect(glowGradient([229, 9, 20], 'full')).toContain('0.36');
   });
 });
 

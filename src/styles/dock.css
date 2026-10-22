@@ -55,6 +55,10 @@ body.home-dock .dock-ambient {
   pointer-events: none;
 }
 
+body.home-dock.dock-no-glow .dock-ambient {
+  display: none;
+}
+
 /* ---- the focused dock app's name -------------------------------------------- */
 
 body.home-dock .dock-hero {
