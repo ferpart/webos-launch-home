@@ -2055,11 +2055,17 @@ export function createSettingsPanel(panel, getConfig, options) {
       return {value: String(n), label: n + ' across'};
     }), String([3, 4, 5, 6].indexOf(config.launcher.dockColumns) >= 0 ? config.launcher.dockColumns : 4));
     homeStyleSection.appendChild(labeledControl('Dock: apps per row', dockColumnsSelect));
+    const dockOrderSelect = createOptionStepper('', 899, [
+      {value: 'recent', label: 'Recently used'},
+      {value: 'pinned', label: 'Pinned order'}
+    ], config.launcher.dockOrder === 'pinned' ? 'pinned' : 'recent');
+    homeStyleSection.appendChild(labeledControl('Dock: top row shows', dockOrderSelect));
     const homeStyleHint = document.createElement('p');
     homeStyleHint.className = 'settings-hint';
     homeStyleHint.textContent = 'Dock: the first row of apps in a dock with the rest in a grid below, ' +
       'a glow in the colour of the app you are on, and a clock top right that opens your inputs, these ' +
-      'settings and TV Settings. Classic: the original row of glass tiles with weather and the volume ' +
+      'settings and TV Settings. The top row can follow the apps you opened last. Classic: the original ' +
+      'row of glass tiles with weather and the volume ' +
       'bar. Wallpaper, apps and inputs are shared; the Glass, icon size and layout settings apply to Classic.';
     homeStyleSection.appendChild(homeStyleHint);
     panes.look.appendChild(homeStyleSection);
@@ -4179,6 +4185,7 @@ export function createSettingsPanel(panel, getConfig, options) {
       config.launcher.numberKeyLaunch = numberKeyToggle.checked;
       config.launcher.homeStyle = homeStyleSelect.value === 'classic' ? 'classic' : 'dock';
       config.launcher.dockColumns = parseInt(dockColumnsSelect.value, 10) || 4;
+      config.launcher.dockOrder = dockOrderSelect.value === 'pinned' ? 'pinned' : 'recent';
       config.launcher.glassTint = glassSelect.value || 'light';
       config.launcher.glassBorder = glassBorderSelect.value || 'white';
       config.launcher.focusColour = focusColourSelect.value || 'warm';

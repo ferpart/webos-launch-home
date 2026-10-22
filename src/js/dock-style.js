@@ -4,6 +4,7 @@ import {appBannerFor} from './app-banners.js';
 import {prefersBundledIcons} from './app-catalog.js';
 import {withAssetVersion} from './compat.js';
 import {APP_VERSION} from './version.js';
+import {getAppIdCandidates} from './app-icons.js';
 
 /*
  * The Dock home style (Settings -> Look -> Home style), after webos-vibehack's
@@ -40,6 +41,56 @@ export const DOCK_COLUMNS = [3, 4, 5, 6];
 export function homeStyleOf(config) {
   const style = config && config.launcher && config.launcher.homeStyle;
   return style === 'classic' ? 'classic' : 'dock';
+}
+
+/** What the dock row shows: 'recent' (default) or 'pinned' order. */
+export function dockOrderOf(config) {
+  const order = config && config.launcher && config.launcher.dockOrder;
+  return order === 'pinned' ? 'pinned' : 'recent';
+}
+
+/**
+ * `tiles` in the order the Dock shows them: with `recent` app ids (newest
+ * first), the most recently opened ones first, as many as fit in the dock
+ * row, then the rest in their pinned order. `idOf(tile)` is a tile's app id.
+ */
+export function orderByRecent(tiles, recent, columns, idOf) {
+  const front = [];
+  (recent || []).forEach(function (id) {
+    if (front.length >= columns) return;
+    const ids = getAppIdCandidates(id);
+    const tile = tiles.filter(function (t) {
+      if (front.indexOf(t) >= 0) return false;
+      const own = idOf(t);
+      return !!own && getAppIdCandidates(own).some(function (c) { return ids.indexOf(c) >= 0; });
+    })[0];
+    if (tile) front.push(tile);
+  });
+  return front.concat(tiles.filter(function (t) { return front.indexOf(t) < 0; }));
+}
+
+const RECENT_KEY = 'lounge.dock.recent';
+const RECENT_MAX = 24;
+
+function loadRecent() {
+  try {
+    const list = JSON.parse(localStorage.getItem(RECENT_KEY) || '[]');
+    return Array.isArray(list) ? list.filter(function (id) { return typeof id === 'string'; }) : [];
+  } catch (err) {
+    return [];
+  }
+}
+
+/** Puts app `id` first in the recently-opened list (kept on the TV). */
+export function noteRecentApp(id) {
+  if (!id) return;
+  const list = loadRecent().filter(function (other) { return other !== id; });
+  list.unshift(id);
+  try {
+    localStorage.setItem(RECENT_KEY, JSON.stringify(list.slice(0, RECENT_MAX)));
+  } catch (err) {
+    // Storage unavailable: the dock keeps its pinned order.
+  }
 }
 
 /** Tiles per row in `config` (3-6, default 4). */
@@ -129,11 +180,26 @@ export function createDockStyle(opts) {
   let ambientFront = 0;
   let ambientKey = '';
   let menuOpen = false;
+  let dockOrder = 'recent';
+  // The tiles in the order shown. Worked out when the home screen appears or
+  // its tiles change, never while the remote is moving through them.
+  let ordered = [];
   const tileColors = new WeakMap();
 
   // TV Settings is in the menu, so its tile sits out of the Dock grid.
-  function tiles() {
+  function pinnedTiles() {
     return Array.prototype.slice.call(grid.querySelectorAll('.app-tile:not(.settings-tile)'));
+  }
+
+  function reorder() {
+    const pinned = pinnedTiles();
+    ordered = dockOrder === 'recent'
+      ? orderByRecent(pinned, loadRecent(), geo.columns, function (t) { return t.dataset.appId; })
+      : pinned;
+  }
+
+  function tiles() {
+    return ordered.filter(function (tile) { return tile.parentNode === grid; });
   }
 
   function dockTiles() {
@@ -148,6 +214,7 @@ export function createDockStyle(opts) {
 
   /** Places every tile by its position; tiles glide when the order changes. */
   function layout() {
+    reorder();
     const list = tiles();
     const g = geo;
     shell.style.setProperty('--dock-tile-w', g.tileW + 'px');
@@ -553,6 +620,15 @@ export function createDockStyle(opts) {
       }
       return true;
     }
+    // Left and Right go to the tile beside it as shown (the dock may be in
+    // recently-used order; focus.js would fall back to pinned order).
+    const list = tiles();
+    const at = list.indexOf(active);
+    if (at >= 0 && (code === REMOTE_KEY.LEFT || code === REMOTE_KEY.RIGHT)) {
+      const next = list[at + (code === REMOTE_KEY.RIGHT ? 1 : -1)];
+      if (next) focusEl(next);
+      return true;
+    }
     // With the Channels strip open, Up and Down go through it (focus.js).
     if (channelStripOpen()) return false;
     if (code === REMOTE_KEY.UP && dockTiles().indexOf(active) >= 0) {
@@ -581,6 +657,7 @@ export function createDockStyle(opts) {
   function apply(config) {
     const want = homeStyleOf(config) === 'dock';
     const columns = dockColumnsOf(config);
+    dockOrder = dockOrderOf(config);
     if (columns !== geo.columns) {
       geo = dockGeometry(columns);
       offset = 0;
@@ -607,10 +684,12 @@ export function createDockStyle(opts) {
     }
   }
 
-  // Back from an app: replay the entrance and put the highlight on the tile.
+  // Back from an app: the recently used apps move into the dock, the
+  // entrance replays, and the highlight goes to the tile.
   function onResume() {
     if (!on || document.hidden) return;
     closeMenu(false);
+    layout();
     animateIn();
   }
 
@@ -627,6 +706,12 @@ export function createDockStyle(opts) {
     if (opts.onOpenTvSettings) opts.onOpenTvSettings();
   });
   inputRow.addEventListener('click', onInputClick);
+  // Opening an app from its tile counts as using it (apps opened elsewhere:
+  // noteApp, from main.js's foreground watch).
+  grid.addEventListener('click', function (event) {
+    const tile = event.target && event.target.closest && event.target.closest('.app-tile');
+    if (tile && tile.dataset.appId) noteRecentApp(tile.dataset.appId);
+  }, true);
   el.app.addEventListener('mousemove', onPointerMove);
   document.addEventListener('focusin', onFocusIn);
   document.addEventListener('scroll', onScroll, true);
@@ -651,6 +736,8 @@ export function createDockStyle(opts) {
     apply: apply,
     isOn: function () { return on; },
     isMenuOpen: function () { return menuOpen; },
+    /** An app came to the front (any way: tile, voice, LG's home, …). */
+    noteApp: noteRecentApp,
     handleArrow: handleArrow,
     handleBack: handleBack,
     /**

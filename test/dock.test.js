@@ -7,11 +7,23 @@ import {
   dockScrollOffset,
   dockTileLeft,
   dockTileTop,
-  homeStyleOf
+  homeStyleOf,
+  noteRecentApp,
+  orderByRecent
 } from '../src/js/dock-style.js';
 import {hsvToRgb, rgbToHsv, vividColor, NEUTRAL_GLOW} from '../src/js/dock-colors.js';
 import {appBannerFor} from '../src/js/app-banners.js';
 import {DEFAULT_CONFIG, configFromBackup} from '../src/js/config.js';
+
+// jsdom without a page URL has no localStorage: a small one in memory.
+if (typeof localStorage === 'undefined') {
+  const store = new Map();
+  vi.stubGlobal('localStorage', {
+    getItem: (k) => (store.has(k) ? store.get(k) : null),
+    setItem: (k, v) => { store.set(k, String(v)); },
+    removeItem: (k) => { store.delete(k); }
+  });
+}
 
 describe('home style setting', () => {
   it('is Dock unless Classic was chosen', () => {
@@ -84,6 +96,31 @@ describe('dock layout', () => {
     // Back up a row: stays while it is still on screen, else only as far as it needs.
     expect(dockScrollOffset(5, 540, four)).toBe(540);
     expect(dockScrollOffset(5, 1000, four)).toBe(1036 - 24 - 80);
+  });
+});
+
+describe('recently used dock', () => {
+  const tile = (id) => ({id: id});
+  const idOf = (t) => t.id;
+
+  it('puts the latest apps first, as many as the dock holds, the rest pinned', () => {
+    const pinned = ['netflix', 'amazon', 'youtube.leanback.v4', 'crunchyroll', 'disney', 'max'].map(tile);
+    const out = orderByRecent(pinned, ['max', 'youtube.leanback.v4', 'gone.app', 'max'], 4, idOf);
+    expect(out.map(idOf)).toEqual(['max', 'youtube.leanback.v4', 'netflix', 'amazon', 'crunchyroll', 'disney']);
+  });
+
+  it('matches an app by any of its ids', () => {
+    const out = orderByRecent([tile('netflix'), tile('amazon.html')], ['amazon'], 4, idOf);
+    expect(out.map(idOf)).toEqual(['amazon.html', 'netflix']);
+  });
+
+  it('remembers the latest first, once each', () => {
+    localStorage.removeItem('lounge.dock.recent');
+    noteRecentApp('netflix');
+    noteRecentApp('youtube.leanback.v4');
+    noteRecentApp('netflix');
+    expect(JSON.parse(localStorage.getItem('lounge.dock.recent'))).toEqual(['netflix', 'youtube.leanback.v4']);
+    localStorage.removeItem('lounge.dock.recent');
   });
 });
 
@@ -200,6 +237,21 @@ describe('dock remote handling', () => {
     expect(tile(6).style.top).toBe('');
     tile(2).focus();
     expect(document.getElementById('dock-hero').textContent).toBe('App 2');
+  });
+
+  it('fills the dock with the apps opened last when the home screen comes back', () => {
+    for (let i = 0; i < 6; i += 1) tile(i).dataset.appId = 'app' + i;
+    localStorage.setItem('lounge.dock.recent', JSON.stringify(['app5', 'app4']));
+    dock.apply({launcher: {homeStyle: 'dock', dockOrder: 'recent'}});
+    expect(tile(5).style.left).toBe('144px');
+    expect(tile(5).classList.contains('dock-row')).toBe(true);
+    // Left and Right follow the order shown.
+    tile(5).focus();
+    dock.handleArrow(REMOTE_KEY.RIGHT, tile(5));
+    expect(document.activeElement).toBe(tile(4));
+    dock.apply({launcher: {homeStyle: 'dock', dockOrder: 'pinned'}});
+    expect(tile(0).style.left).toBe('144px');
+    localStorage.removeItem('lounge.dock.recent');
   });
 
   it('re-lays out for another number of apps per row', () => {

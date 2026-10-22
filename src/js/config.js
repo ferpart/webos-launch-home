@@ -98,6 +98,8 @@ export const DEFAULT_CONFIG = {
     homeStyle: 'dock',
     // Dock: tiles per row (3-6); they shrink to fit.
     dockColumns: 4,
+    // Dock: the dock row shows the 'recent'ly opened apps, or the 'pinned' order.
+    dockOrder: 'recent',
     // All apps tile on the home row (opens the grid of every app on the TV).
     allAppsTile: true,
     // Remote number keys (1-9) open the home row tile at that position, with

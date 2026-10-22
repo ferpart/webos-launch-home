@@ -1088,6 +1088,8 @@ async function pollForegroundOnce() {
     const res = await getForegroundApp();
     const appId = res.appId || res.id || '';
     noteForeground(appId);
+    // The Dock's recently used apps (dock-style.js).
+    if (appId && appId !== APP_ID && !isHomeApp(appId)) dock.noteApp(appId);
     const config = getConfig();
 
     // Only pause ambient when we actually left Launch Home (or launched an app).
