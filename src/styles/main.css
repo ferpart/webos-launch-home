@@ -2710,8 +2710,16 @@ body.settings-open .settings-panel .ai-provider-card.focused {
 
 /* Performance mode: when a user on a weaker TV enables it, the glassmorphic blur
    and animated background are disabled for smoother rendering, while the layout
-   stays intact. Strips GPU-heavy effects for low-spec TVs (e.g. LG B4). */
-.perf-mode * {
+   stays intact. Strips GPU-heavy effects for low-spec TVs (e.g. LG B4).
+   The Dock home style (dock.css) has no constant blur and moves by transform
+   only, so there it strips only Settings, All apps and the screensaver. */
+body.perf-mode:not(.home-dock) *,
+body.perf-mode.home-dock #settings-panel,
+body.perf-mode.home-dock #settings-panel *,
+body.perf-mode.home-dock .all-apps,
+body.perf-mode.home-dock .all-apps *,
+body.perf-mode.home-dock #custom-screensaver,
+body.perf-mode.home-dock #custom-screensaver * {
   backdrop-filter: none !important;
   -webkit-backdrop-filter: none !important;
   animation: none !important;
@@ -2729,7 +2737,9 @@ body.settings-open .settings-panel .ai-provider-card.focused {
 /* The rule above strips every box-shadow, and the focus rings are drawn with
    box-shadow — so the remote highlight vanished and the dock looked frozen.
    Keep a flat ring (spread only, no blur: cheap to paint). */
-.perf-mode .focused,
+body.perf-mode:not(.home-dock) .focused,
+body.perf-mode.home-dock #settings-panel .focused,
+body.perf-mode.home-dock .all-apps .focused,
 .perf-mode .settings-row-highlight {
   box-shadow:
     0 0 0 2px rgba(255, 255, 255, 0.9),

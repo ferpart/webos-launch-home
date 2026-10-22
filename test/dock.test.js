@@ -325,6 +325,20 @@ describe('dock remote handling', () => {
     expect(dock.handleBack()).toBe(false);
   });
 
+  it('uses smoked glass instead of a blur over a video wallpaper', () => {
+    const clock = document.getElementById('dock-menu-btn');
+    clock.click();
+    expect(document.body.classList.contains('dock-menu-over-video')).toBe(false);
+    dock.handleBack();
+    const layer = document.createElement('div');
+    layer.id = 'background-layer';
+    layer.appendChild(document.createElement('video'));
+    document.body.appendChild(layer);
+    clock.click();
+    expect(document.body.classList.contains('dock-menu-over-video')).toBe(true);
+    dock.handleBack();
+  });
+
   it('opens Settings and TV Settings from the menu', () => {
     document.getElementById('dock-menu-btn').click();
     document.getElementById('dock-menu-settings').click();

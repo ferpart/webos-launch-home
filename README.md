@@ -28,11 +28,12 @@ You set the home style in **Settings → Look → Home style**.
 - **Recently used apps.** The dock can show the apps that you opened last. Launch Home records an app when you open it from a tile, by voice or in a different way. The dock changes when you go back to the home screen, not while you move through the tiles. You can also keep your pinned order.
 - **Wide tiles.** Popular apps get 16:9 tiles. Each tile comes from the art that the app installs on webOS. Other apps show their icon on a blurred copy of the same icon.
 - **Focus effects.** The selected tile becomes larger and gets a soft shadow and a light sheen. One glass frame moves between the tiles. When you point at the selected tile with the Magic Remote, the tile tilts a small amount.
-- **Clock menu.** The clock is at the top right, as on an Apple TV. Press it to open a frosted menu. The menu switches inputs and opens Launch Home settings or TV Settings.
+- **Clock menu.** The clock is at the top right, as on an Apple TV. Press it to open the menu. The menu switches inputs and opens Launch Home settings or TV Settings. Over a photo wallpaper, the menu is frosted glass. Over an aerial video, the menu is smoked glass.
 - **Your wallpaper.** The home screen shows your wallpaper behind the tiles. This includes the Apple aerial videos.
 - **Optional colour glow.** A glow in the colour of the selected app can show behind the dock or across the full screen. The glow is off by default.
 - **Correct local time.** If you do not select a time zone, the clock uses the time zone and offset from the TV settings. Some TVs keep their system clock on GMT, and this setting corrects the clock on those TVs.
-- **webOS 6 support.** The home screen works with the Chromium 79 browser engine of webOS 6. Only the open menu uses a blur effect over the video.
+- **webOS 6 support.** The home screen works with the Chromium 79 browser engine of webOS 6. webOS plays video on a hardware layer below the page, and the page cannot blur that layer. So the home screen does not use a blur over a video.
+- **Performance mode.** In the Apple TV style, Performance mode changes only the wallpaper (smaller photos, no slow zoom) and the Settings, All apps and screensaver screens. The home screen keeps its animations.
 
 ### Classic style
 

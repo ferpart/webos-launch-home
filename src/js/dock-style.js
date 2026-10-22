@@ -573,6 +573,11 @@ export function createDockStyle(opts) {
 
   function openMenu() {
     menuOpen = true;
+    // webOS plays video on a hardware layer under the page, where a backdrop
+    // blur can't see it (it blurs a transparent hole, drawn black). Over a
+    // video wallpaper the menu is smoked glass instead (dock.css).
+    document.body.classList.toggle('dock-menu-over-video',
+      !!document.querySelector('#background-layer video'));
     document.body.classList.add('dock-menu-open');
     menuBtn.setAttribute('aria-expanded', 'true');
     const items = menuItems();
