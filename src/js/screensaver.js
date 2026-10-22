@@ -10,7 +10,7 @@
  * OLED burn-in protection and makes the system saver less likely to steal focus.
  */
 
-import {setClockTime, clockTimeZone} from './clock-format.js';
+import {setClockTime, clockTimeZone, zonedClock} from './clock-format.js';
 import {MEDIA_VIDEO, normalizeBackgroundConfig, resolveBackgroundMedia} from './backgrounds.js';
 import {resolveLoungePaths} from './usb.js';
 
@@ -21,7 +21,10 @@ const PRESETS = {
   'ember': 'radial-gradient(ellipse at 30% 20%, #4a1942 0%, #1a0a14 50%, #080408 100%)'
 };
 
-function formatDate(date, timezone) {
+function formatDate(when, zone) {
+  const zoned = zonedClock(when, zone);
+  const date = zoned.date;
+  const timezone = zoned.timeZone;
   const options = {weekday: 'long', day: 'numeric', month: 'long'};
   if (timezone) options.timeZone = timezone;
   try {

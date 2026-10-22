@@ -1,4 +1,4 @@
-import {setClockTime, clockParts, clockTimeZone} from './clock-format.js';
+import {setClockTime, clockParts, clockTimeZone, setTvTimeZone, zonedClock} from './clock-format.js';
 import {createAllApps} from './all-apps.js';
 import './compat.js';
 import {loadConfig, saveConfig, applyUsbConfig, readStoredConfigText} from './config.js';
@@ -26,7 +26,8 @@ import {
   writeAutoBackup,
   setSystemVolume,
   setScreensaverTimeout,
-  execRoot
+  execRoot,
+  getTvTimeZone
 } from './luna.js';
 import {isHomeApp} from './remote.js';
 import {isTerminalAppId, getAppIdCandidates} from './app-icons.js';
@@ -566,7 +567,10 @@ if (elements.appSettingsBtn) {
   });
 }
 
-function formatClockDate(date, timezone) {
+function formatClockDate(when, zone) {
+  const zoned = zonedClock(when, zone);
+  const date = zoned.date;
+  const timezone = zoned.timeZone;
   const options = {
     weekday: 'long',
     day: 'numeric',
@@ -1246,6 +1250,16 @@ async function init() {
   await autoEnableTerminal();
   updateClock();
   setInterval(updateClock, 30000);
+  // The TV's own time zone, for TVs whose clock runs on GMT (clock-format.js),
+  // read again hourly for a change to or from daylight saving time.
+  function readTvTimeZone() {
+    getTvTimeZone().then(function (zone) {
+      setTvTimeZone(zone);
+      updateClock();
+    });
+  }
+  readTvTimeZone();
+  setInterval(readTvTimeZone, 60 * 60 * 1000);
   bindAppScrollHints();
 
   applyScreensaverSetting();

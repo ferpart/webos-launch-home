@@ -106,6 +106,40 @@ export function launchApp(id) {
   }), 5000);
 }
 
+/**
+ * The time zone in the TV's settings, {zone: 'America/Mexico_City', offset:
+ * -360} (minutes from UTC), or null. Some TVs run the system clock, and so
+ * the browser's local time, on GMT and keep the zone only here. Sandboxed
+ * first, then as root.
+ */
+export function getTvTimeZone() {
+  const payload = {category: 'time', keys: ['timeZone', 'timeOffset']};
+  function pick(res) {
+    const settings = (res && res.settings) || {};
+    const tz = settings.timeZone;
+    if (!tz || !tz.ZoneID) throw new Error('No time zone in the TV settings');
+    // timeOffset ("GMT-6", "GMT+5:30") is the offset in effect now, as LG's
+    // own clock shows it; offsetFromUTC is the zone's standard one.
+    const m = /^GMT([+-])(\d{1,2})(?::(\d{2}))?$/.exec(String(settings.timeOffset || ''));
+    const offset = m
+      ? (m[1] === '-' ? -1 : 1) * (Number(m[2]) * 60 + Number(m[3] || 0))
+      : Number(tz.offsetFromUTC);
+    return {zone: String(tz.ZoneID), offset: offset};
+  }
+  return withTimeout(lunaRequest('luna://com.webos.settingsservice', {
+    method: 'getSystemSettings',
+    parameters: payload
+  }), 4000).then(pick).catch(function () {
+    const command = lunaSendRootCommand('luna://com.webos.settingsservice/getSystemSettings',
+      JSON.stringify(payload), 4000);
+    return withTimeout(execRoot(command), 6000).then(function (res) {
+      return pick(JSON.parse(readExecStdout(res)));
+    });
+  }).catch(function () {
+    return null;
+  });
+}
+
 export function getAppInfo(id) {
   return withTimeout(lunaRequest('luna://com.webos.applicationManager', {
     method: 'getAppInfo',

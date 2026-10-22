@@ -4,28 +4,46 @@
  * format). `timezone` is Settings -> Look -> Timezone ('' = the TV's own).
  */
 
+// The TV's own zone, from its settings (luna.js getTvTimeZone), once read.
+let tvZone = null;
+
+/** {zone, offset} from luna.js getTvTimeZone, or null. */
+export function setTvTimeZone(zone) {
+  tvZone = zone && zone.zone ? zone : null;
+}
+
 /**
  * The time zone clocks show: Settings -> Look -> Timezone, else the TV's own.
  * Some TVs keep the system clock on GMT and only the TV's settings know the
  * zone (America/Mexico_City on a webOS 6 OLED), so the browser's local time
- * was hours off; webOS hands web apps that zone as PalmSystem.timeZone.
+ * was hours off.
  */
 export function clockTimeZone(launcher) {
   if (launcher && launcher.timezone) return launcher.timezone;
-  try {
-    const system = (typeof window !== 'undefined') && (window.webOSSystem || window.PalmSystem);
-    const zone = system && system.timeZone;
-    return typeof zone === 'string' ? zone : '';
-  } catch (err) {
-    return '';
+  return tvZone ? tvZone.zone : '';
+}
+
+/**
+ * `date` and the zone to format it in. For the TV's own zone that is the TV's
+ * offset, as UTC: the browser's zone rules can be years old (Chromium 79
+ * still moves Mexico City to daylight saving time, which Mexico dropped in
+ * 2022), and the TV's offset is what LG's own clock uses.
+ */
+export function zonedClock(date, timezone) {
+  if (tvZone && timezone === tvZone.zone && isFinite(tvZone.offset)) {
+    return {date: new Date(date.getTime() + tvZone.offset * 60000), timeZone: 'UTC'};
   }
+  return {date: date, timeZone: timezone};
 }
 
 function pad(n) {
   return String(n).padStart(2, '0');
 }
 
-export function clockParts(date, timezone, hour12) {
+export function clockParts(when, zone, hour12) {
+  const zoned = zonedClock(when, zone);
+  const date = zoned.date;
+  const timezone = zoned.timeZone;
   let hours = date.getHours();
   let minutes = date.getMinutes();
   if (timezone && typeof Intl !== 'undefined' && Intl.DateTimeFormat) {
